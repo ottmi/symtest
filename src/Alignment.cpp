@@ -153,7 +153,9 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 
 		unsigned int df = 0;
 		double bowker = .0;
+		double delta_s = 0.0;
 		for (int i = 0; i < dim; i++)
+		{
 		    for (int j = i + 1; j < dim; j++)
 		    {
 			double dm_ij = 0;
@@ -171,7 +173,11 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 			    df++;
 			    bowker += ((dm_ij - dm_ji) * (dm_ij - dm_ji)) / (dm_ij + dm_ji);
 			}
+
+			double x = dm_ji - dm_ij;
+			delta_s += (x / sum) * (x / sum);
 		    }
+		}
 
 		double Q = 1.0;
 		if (df > 0)
@@ -179,23 +185,6 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 		bowker_mat[k * n + l] = Q;
 		bowker_mat[l * n + k] = Q;
 
-		double delta_s = 0.0;
-		for (int i = 0; i < dim; i++)
-		    for (int j = i + 1; j < dim; j++)
-		    {
-			double dm_ij = 0;
-			id = ((unsigned long) i << 32) + j;
-			if ((it = dm.find(id)) != dm.end())
-			    dm_ij = it->second;
-
-			double dm_ji = 0;
-			id = ((unsigned long) j << 32) + i;
-			if ((it = dm.find(id)) != dm.end())
-			    dm_ji = it->second;
-
-			double x = dm_ji - dm_ij;
-			delta_s += (x / sum) * (x / sum);
-		    }
 		delta_s = sqrt(delta_s);
 		ds_mat[k * n + l] = delta_s;
 		ds_mat[l * n + k] = delta_s;
