@@ -1,5 +1,4 @@
 #include "Sequence.h"
-#include "globals.h"
 #include "helper.h"
 
 Sequence::Sequence(string name, string seq)
@@ -14,7 +13,7 @@ Sequence::~Sequence()
     // TODO Auto-generated destructor stub
 }
 
-void Sequence::translateToNum(int dataType)
+void Sequence::translateToNum(int dataType, Options *options)
 {
     _dataType = dataType;
     if (dataType == _DNA_DATA)
@@ -24,8 +23,16 @@ void Sequence::translateToNum(int dataType)
     else
 	_unambiguousThreshold = _ALPHANUM_UNAMB_THRES;
 
-    for (unsigned int i = 0; i < _sequence.size(); i++)
-	_numericSeq.push_back(mapCharToNum(_sequence.substr(i, 1), dataType));
+    unsigned int numOfSites = (_sequence.length() - options->groupOffset) / options->groupLength;
+    for (unsigned int i = 0; i < numOfSites; i++)
+    {
+	vector<int> cols;
+	for (unsigned int j = 0; j < options->grouping.size(); j++)
+	    cols.push_back(options->groupOffset + options->groupLength * i + options->grouping[j]);
+	_numericSeq.push_back(mapCharToNum(getColumns(cols), dataType));
+
+    }
+
 }
 
 string Sequence::getColumns(vector<int> cols)

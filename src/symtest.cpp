@@ -133,6 +133,17 @@ int parseArguments(int argc, char** argv, Options *options)
 
 	options->groupOffset = minGroup;
 	options->groupLength = maxGroup - minGroup + 1;
+	if (verbose)
+	{
+	    cout << "Grouping: offset=" << options->groupOffset << " length=" << options->groupLength << " grouping=";
+	    for (unsigned int i = 0; i < options->grouping.size(); i++)
+	    {
+		if (i > 0)
+		    cout << ",";
+		cout << options->grouping[i];
+	    }
+	    cout << endl;
+	}
 
 	if (options->prefix.length() == 0)
 	{

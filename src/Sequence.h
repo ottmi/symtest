@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include "globals.h"
 
 using namespace std;
 
@@ -10,7 +11,7 @@ class Sequence {
 public:
 	Sequence(string name, string seq);
 	virtual ~Sequence();
-	void translateToNum(int dataType);
+	void translateToNum(int dataType, Options *options);
 	string& getName() { return _name; };
 	string& getSequence() { return _sequence; };
 	string getColumns(vector<int> cols);

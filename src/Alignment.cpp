@@ -20,7 +20,7 @@ Alignment::Alignment(Options *options)
 {
     AlignmentReader alignmentReader(options->inputAlignment);
     _alignment = alignmentReader.getSequences();
-    _cols = alignmentReader.getCols();
+    _cols = (alignmentReader.getCols() - options->groupOffset) / options->groupLength;
 
     string dataTypeDesc[] = { "DNA", "AA", "alphanumeric" };
     if (options->dataType < 0)
@@ -60,7 +60,7 @@ Alignment::Alignment(Options *options)
     }
 
     for (unsigned int i = 0; i < _alignment.size(); i++)
-	_alignment[i].translateToNum(_dataType);
+	_alignment[i].translateToNum(_dataType, options);
 }
 
 Alignment::~Alignment()
@@ -109,8 +109,8 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
     if (windowStep <= 0)
 	windowStep = windowSize;
 
-    //if (windowSize < (int) _cols)
-    cout << "  WindowSize=" << windowSize << " StepWidth=" << windowStep << " _cols=" << _cols << endl;
+    if (windowSize < (int) _cols)
+	cout << "  WindowSize=" << windowSize << " StepWidth=" << windowStep << " _cols=" << _cols << endl;
 
     int dim;
     if (_dataType == _DNA_DATA)
@@ -133,14 +133,20 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 	    {
 		Sequence s2 = _alignment[l];
 		unsigned int sum = 0;
-		vector<int> dm(dim * dim, 0);
+		map<unsigned long, unsigned int> dm;
+		map<unsigned long, unsigned int>::iterator it;
+		unsigned long id;
 		for (unsigned int m = windowStart; m < windowStart + windowSize; m++)
 		{
 		    unsigned int c1 = s1.getNumerical(m);
 		    unsigned int c2 = s2.getNumerical(m);
 		    if (s1.charIsUnambiguous(c1) && s2.charIsUnambiguous(c2))
 		    {
-			dm[c1 * dim + c2]++;
+			id = ((unsigned long) c1 << 32) + c2;
+			if ((it = dm.find(id)) != dm.end())
+			    it->second = it->second + 1;
+			else
+			    dm.insert(pair<unsigned long, unsigned int>(id, 1));
 			sum++;
 		    }
 		}
@@ -150,9 +156,17 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 		for (int i = 0; i < dim; i++)
 		    for (int j = i + 1; j < dim; j++)
 		    {
-			double dm_ij = dm[i * dim + j];
-			double dm_ji = dm[j * dim + i];
-			if ((dm[i * dim + j] + dm[j * dim + i]) > 0)
+			double dm_ij = 0;
+			id = ((unsigned long) i << 32) + j;
+			if ((it = dm.find(id)) != dm.end())
+			    dm_ij = it->second;
+
+			double dm_ji = 0;
+			id = ((unsigned long) j << 32) + i;
+			if ((it = dm.find(id)) != dm.end())
+			    dm_ji = it->second;
+
+			if (dm_ij + dm_ji > 0)
 			{
 			    df++;
 			    bowker += ((dm_ij - dm_ji) * (dm_ij - dm_ji)) / (dm_ij + dm_ji);
@@ -169,7 +183,17 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 		for (int i = 0; i < dim; i++)
 		    for (int j = i + 1; j < dim; j++)
 		    {
-			double x = dm[j * dim + i] - dm[i * dim + j];
+			double dm_ij = 0;
+			id = ((unsigned long) i << 32) + j;
+			if ((it = dm.find(id)) != dm.end())
+			    dm_ij = it->second;
+
+			double dm_ji = 0;
+			id = ((unsigned long) j << 32) + i;
+			if ((it = dm.find(id)) != dm.end())
+			    dm_ji = it->second;
+
+			double x = dm_ji - dm_ij;
 			delta_s += (x / sum) * (x / sum);
 		    }
 		delta_s = sqrt(delta_s);
@@ -183,8 +207,18 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 		    double col = 0.0;
 		    for (int j = 0; j < dim; j++)
 		    {
-			row += dm[i * dim + j];
-			col += dm[j * dim + i];
+			double dm_ij = 0;
+			id = ((unsigned long) i << 32) + j;
+			if ((it = dm.find(id)) != dm.end())
+			    dm_ij = it->second;
+
+			double dm_ji = 0;
+			id = ((unsigned long) j << 32) + i;
+			if ((it = dm.find(id)) != dm.end())
+			    dm_ji = it->second;
+
+			row += dm_ij;
+			col += dm_ji;
 		    }
 		    delta_ms += ((row - col) / sum) * ((row - col) / sum);
 		}
