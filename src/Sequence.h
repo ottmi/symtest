@@ -23,7 +23,7 @@ private:
 	string _name;
 	string _sequence;
 	vector<unsigned int> _numericSeq;
-	vector<int> _grouping;
+	int _groupSize;
 	int _unambiguousThreshold;
 };
 

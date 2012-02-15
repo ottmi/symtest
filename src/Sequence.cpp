@@ -5,7 +5,6 @@ Sequence::Sequence(string name, string seq)
 {
     _name = name;
     _sequence = seq;
-    _grouping.push_back(1);
 }
 
 Sequence::~Sequence()
@@ -31,6 +30,7 @@ void Sequence::translateToNum(int dataType, Options *options)
 			cols.push_back(options->groupLength * i + options->grouping[j] - 1);
 	_numericSeq.push_back(mapCharToNum(getColumns(cols), dataType));
     }
+    _groupSize = options->grouping.size();
 
 }
 
@@ -54,7 +54,7 @@ unsigned int Sequence::getNumerical(int pos)
 
 bool Sequence::charIsUnambiguous(unsigned int n)
 {
-    for (unsigned int i = 0; i < _grouping.size(); i++)
+    for (unsigned int i = 0; i < _groupSize; i++)
     {
 	if ((n & 255) > _unambiguousThreshold)
 	    return false;
