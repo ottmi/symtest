@@ -7,6 +7,7 @@
 #include <cfloat>
 #include <sstream>
 #include <map>
+#include <utility>
 #include "AlignmentReader.h"
 #include "Alignment.h"
 #include "helper.h"
@@ -142,8 +143,8 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 	    {
 		Sequence s2 = _alignment[l];
 		unsigned int sum = 0;
-		map<unsigned long, unsigned int> dm;
-		map<unsigned long, unsigned int>::iterator it;
+		map<pair<unsigned int, unsigned int>, unsigned int> dm;
+		map<pair<unsigned int, unsigned int>, unsigned int>::iterator it;
 		unsigned long id;
 		for (unsigned int m = windowStart; m < windowStart + windowSize; m++)
 		{
@@ -151,11 +152,11 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 		    unsigned int c2 = s2.getNumerical(m);
 		    if (s1.charIsUnambiguous(c1) && s2.charIsUnambiguous(c2))
 		    {
-			id = ((unsigned long) c1 << 32) + c2;
-			if ((it = dm.find(id)) != dm.end())
+		        pair<unsigned int, unsigned int> p(c1, c2);
+			if ((it = dm.find(p)) != dm.end())
 			    it->second = it->second + 1;
 			else
-			    dm.insert(pair<unsigned long, unsigned int>(id, 1));
+			    dm.insert(pair<pair<unsigned int, unsigned int>, unsigned int>(p, 1));
 			sum++;
 		    }
 		}
@@ -168,13 +169,13 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 		    for (int j = i + 1; j < dim; j++)
 		    {
 			double dm_ij = 0;
-			id = ((unsigned long) i << 32) + j;
-			if ((it = dm.find(id)) != dm.end())
+			pair<unsigned int, unsigned int> p1(i, j);
+			if ((it = dm.find(p1)) != dm.end())
 			    dm_ij = it->second;
 
 			double dm_ji = 0;
-			id = ((unsigned long) j << 32) + i;
-			if ((it = dm.find(id)) != dm.end())
+			pair<unsigned int, unsigned int> p2(j, i);
+			if ((it = dm.find(p2)) != dm.end())
 			    dm_ji = it->second;
 
 			if (dm_ij + dm_ji > 0)
@@ -206,13 +207,13 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 		    for (int j = 0; j < dim; j++)
 		    {
 			double dm_ij = 0;
-			id = ((unsigned long) i << 32) + j;
-			if ((it = dm.find(id)) != dm.end())
+			pair<unsigned int, unsigned int> p1(i, j);
+			if ((it = dm.find(p1)) != dm.end())
 			    dm_ij = it->second;
 
 			double dm_ji = 0;
-			id = ((unsigned long) j << 32) + i;
-			if ((it = dm.find(id)) != dm.end())
+			pair<unsigned int, unsigned int> p2(j, i);
+			if ((it = dm.find(p2)) != dm.end())
 			    dm_ji = it->second;
 
 			row += dm_ij;
