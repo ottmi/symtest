@@ -35,11 +35,13 @@ int parseArguments(int argc, char** argv, Options *options)
 	options->writeExtendedTestResults = false;
 	options->windowSize = -1;
 	options->windowStep = -1;
+	options->columnFrom = -1;
+	options->columnTo = -1;
 
 	int minGroup = 0;
 	int maxGroup = 0;
 
-	while ((c = getopt(argc, argv, "t:p:g:xw:n:v::h")) != -1)
+	while ((c = getopt(argc, argv, "t:p:g:c:xw:n:v::h")) != -1)
 	{
 		switch (c)
 		{
@@ -94,6 +96,21 @@ int parseArguments(int argc, char** argv, Options *options)
 				}
 				break;
 			}
+			case 'c':
+			{
+				stringstream ss(optarg);
+				ss >> options->columnFrom;
+				if (options->columnFrom == 0)
+				{
+					cerr << "Alignment column enumeration starts with 1" << endl;
+					return 4;
+				}
+				if (ss.peek() == '-'){
+					ss.ignore();
+					ss >> options->columnTo;
+				}
+				break;
+			}
 			case 'x':
 				options->writeExtendedTestResults = true;
 				break;
@@ -141,6 +158,9 @@ int parseArguments(int argc, char** argv, Options *options)
 		cout << endl;
 	}
 
+	if (options->columnFrom >= 0)
+		cout << "Columns: " << options->columnFrom << " - " << options->columnTo << endl;
+
 	if (options->prefix.length() == 0)
 	{
 		int m = options->inputAlignment.find_last_of('/') + 1;
@@ -162,6 +182,8 @@ void printSyntax()
 	cout << "Options:" << endl;
 	cout << "  -t<a|d|n>      Data type a=AA, d=DNA, n=Alphanumeric [default: auto-detect]" << endl;
 	cout << "  -p<STRING>     Prefix for output files [default: name of alignment w/o .ext]" << endl;
+	cout << endl;
+	cout << "  -c<from-to>    Only consider alignment columns from-to, enumeration starts with 1" << endl;
 	cout << "  -g<LIST>       Grouping of sites, e.g. 1,2,-3 for duplets, 1,2,3 for codons" << endl;
 	cout << endl;
 	cout << "  -x             Write extended output files with test results" << endl;

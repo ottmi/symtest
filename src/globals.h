@@ -6,7 +6,7 @@
 using namespace std;
 
 #define PROGNAME "symtest"
-#define VERSION "0.1.4"
+#define VERSION "0.1.5"
 #define PROGDATE "2012-02-15"
 
 #define _DNA_DATA	0
@@ -33,6 +33,8 @@ typedef struct opt_struct
     string prefix;
     vector<int> grouping;
     int groupLength;
+    int columnFrom;
+    int columnTo;
     bool writeExtendedTestResults;
     int windowSize;
     int windowStep;

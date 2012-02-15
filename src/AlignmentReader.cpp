@@ -47,20 +47,8 @@ AlignmentReader::AlignmentReader(string fileName)
 			}
 		}
 	}
-}
 
-
-AlignmentReader::~AlignmentReader()
-{
-	if (!_fileReader.is_open())
-		_fileReader.close();
-}
-
-
-vector<Sequence> AlignmentReader::getSequences()
-{
 	string whiteSpace = " \n\t";
-	vector<Sequence> sequences;
 
 	if (_format == _FASTA_FORMAT)
 	{
@@ -84,7 +72,7 @@ vector<Sequence> AlignmentReader::getSequences()
 			if (header.length() > 1 && seq.length())
 			{
 				Sequence s(header, seq);
-				sequences.push_back(s);
+				_sequences.push_back(s);
 				_rows++;
 				if (seq.length() > (unsigned int) _cols)
 					_cols = seq.length();
@@ -112,18 +100,44 @@ vector<Sequence> AlignmentReader::getSequences()
 	   			}
 
 	   			if ((int) seq.length() != _cols)
-	   				cerr << "Sequence #" << sequences.size() + 1 << " (" << name << ") consists of " << seq.length() << " characters when it should be " << _cols << "." << endl;
+	   				cerr << "Sequence #" << _sequences.size() + 1 << " (" << name << ") consists of " << seq.length() << " characters when it should be " << _cols << "." << endl;
 	   			seq = adjustString(seq, false);
 	   			if (name.length() && seq.length())
 	   			{
 	   				Sequence s(name, seq);
-	   				sequences.push_back(s);
+	   				_sequences.push_back(s);
 	   			}
 	   		}
 	    }
-		if ((int) sequences.size() < _rows)
-			cerr << "The alignment contains only " << sequences.size() << " rows, but it should be " << _rows << "."<< endl;
+		if ((int) _sequences.size() < _rows)
+			cerr << "The alignment contains only " << _sequences.size() << " rows, but it should be " << _rows << "."<< endl;
 	}
+}
 
-    return sequences;
+
+AlignmentReader::~AlignmentReader()
+{
+	if (!_fileReader.is_open())
+		_fileReader.close();
+}
+
+
+vector<Sequence> AlignmentReader::getSequences(int from, int to)
+{
+	if (from == -1 && to == -1)
+		return _sequences;
+	else
+	{
+		vector<Sequence> sequences;
+		for (unsigned int i = 0; i < _sequences.size(); i++)
+		{
+			string name = _sequences[i].getName();
+			string seq = _sequences[i].getSequence();
+			if (to == -1)
+			    sequences.push_back(Sequence(name, seq.substr(from-1)));
+			else
+			    sequences.push_back(Sequence(name, seq.substr(from-1, to-from+1)));
+		}
+		return sequences;
+	}
 }
