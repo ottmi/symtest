@@ -105,7 +105,8 @@ int parseArguments(int argc, char** argv, Options *options)
 					cerr << "Alignment column enumeration starts with 1" << endl;
 					return 4;
 				}
-				if (ss.peek() == '-'){
+				if (ss.peek() == '-')
+				{
 					ss.ignore();
 					ss >> options->columnTo;
 				}
@@ -158,8 +159,7 @@ int parseArguments(int argc, char** argv, Options *options)
 		cout << endl;
 	}
 
-	if (options->columnFrom >= 0)
-		cout << "Columns: " << options->columnFrom << " - " << options->columnTo << endl;
+	if (options->columnFrom >= 0) cout << "Columns: " << options->columnFrom << " - " << options->columnTo << endl;
 
 	if (options->prefix.length() == 0)
 	{
