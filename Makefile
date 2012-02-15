@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -g3 -gdwarf-2 -O3 
+CXXFLAGS = -O3 
 LDFLAGS = 
 LIBS = -lm
 
@@ -19,8 +19,7 @@ src/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
 
 tarball:
-	tar --transform "s,^,shuffle-$(VERSION)/," -cjf shuffle-$(VERSION).tar.bz2 configure Makefile.in src/*.cpp src/*.h
-
+	tar --transform "s,^,symtest-$(VERSION)/," -cjf symtest-$(VERSION).tar.bz2 Makefile src/*.cpp src/*.h
 
 clean:
 	$(RM) $(BIN) $(OBJ)

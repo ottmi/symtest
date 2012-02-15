@@ -20,7 +20,7 @@ Alignment::Alignment(Options *options)
 {
     AlignmentReader alignmentReader(options->inputAlignment);
     _alignment = alignmentReader.getSequences();
-    _cols = (alignmentReader.getCols() - options->groupOffset) / options->groupLength;
+    _cols = alignmentReader.getCols() / options->groupLength;
 
     string dataTypeDesc[] = { "DNA", "AA", "alphanumeric" };
     if (options->dataType < 0)
@@ -60,7 +60,16 @@ Alignment::Alignment(Options *options)
     }
 
     for (unsigned int i = 0; i < _alignment.size(); i++)
+    {
 	_alignment[i].translateToNum(_dataType, options);
+	if (verbose >= 2)
+	{
+	    cout << i << ": ";
+	    for (unsigned int j = 0; j < _alignment[i].getLength() / options->groupLength; j++)
+	      cout << mapNumToChar(_alignment[i].getNumerical(j), _dataType, options->grouping.size()) << " ";
+	    cout << endl;
+	}
+    }
 }
 
 Alignment::~Alignment()

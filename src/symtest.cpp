@@ -19,8 +19,7 @@ int parseArguments(int argc, char** argv, Options *options)
 {
 	char c;
 
-	if (argc < 2)
-		return 0;
+	if (argc < 2) return 0;
 
 	if (argc == 2 && argv[1][0] == '-')
 	{
@@ -32,7 +31,7 @@ int parseArguments(int argc, char** argv, Options *options)
 
 	options->dataType = -1;
 	options->help = 0;
-	options->grouping.push_back(0);
+	options->grouping.push_back(1);
 	options->writeExtendedTestResults = false;
 	options->windowSize = -1;
 	options->windowStep = -1;
@@ -79,17 +78,19 @@ int parseArguments(int argc, char** argv, Options *options)
 				stringstream ss(optarg);
 				while (ss >> i)
 				{
-					if (i >= 0)
+					if (i == 0)
+					{
+						cerr << "The site numbers used in groupings start with 1." << endl;
+						return 3;
+					}
+					if (i > 0)
 						options->grouping.push_back(i);
 					else
 						i = -i;
-					if (i > maxGroup)
-						maxGroup = i;
-					if (i < minGroup)
-						minGroup = i;
+					if (i > maxGroup) maxGroup = i;
+					if (i < minGroup) minGroup = i;
 
-					if (ss.peek() == ',')
-						ss.ignore();
+					if (ss.peek() == ',') ss.ignore();
 				}
 				break;
 			}
@@ -102,11 +103,9 @@ int parseArguments(int argc, char** argv, Options *options)
 				stringstream ss(optarg);
 				while (ss >> i)
 				{
-					if (options->windowSize < 0)
-						options->windowSize = i;
+					if (options->windowSize < 0) options->windowSize = i;
 					options->windowStep = i;
-					if (ss.peek() == ',')
-						ss.ignore();
+					if (ss.peek() == ',') ss.ignore();
 				}
 				break;
 			}
@@ -125,32 +124,28 @@ int parseArguments(int argc, char** argv, Options *options)
 				options->help = 1;
 				break;
 			default:
-				if (c != '?')
-					cerr << "Unknown parameter: " << c << endl;
+				if (c != '?') cerr << "Unknown parameter: " << c << endl;
 				return 1;
 		}
 	}
 
-	options->groupOffset = minGroup;
 	options->groupLength = maxGroup - minGroup + 1;
 	if (verbose)
 	{
-	    cout << "Grouping: offset=" << options->groupOffset << " length=" << options->groupLength << " grouping=";
-	    for (unsigned int i = 0; i < options->grouping.size(); i++)
-	    {
-		if (i > 0)
-		    cout << ",";
-		cout << options->grouping[i];
-	    }
-	    cout << endl;
+		cout << "Grouping: length=" << options->groupLength << " grouping=";
+		for (unsigned int i = 0; i < options->grouping.size(); i++)
+		{
+			if (i > 0) cout << ",";
+			cout << options->grouping[i];
+		}
+		cout << endl;
 	}
 
 	if (options->prefix.length() == 0)
 	{
 		int m = options->inputAlignment.find_last_of('/') + 1;
 		int n = options->inputAlignment.find_last_of('.');
-		if (n > -1)
-			n = n - m;
+		if (n > -1) n = n - m;
 		options->prefix = options->inputAlignment.substr(m, n);
 	}
 
@@ -167,7 +162,7 @@ void printSyntax()
 	cout << "Options:" << endl;
 	cout << "  -t<a|d|n>      Data type a=AA, d=DNA, n=Alphanumeric [default: auto-detect]" << endl;
 	cout << "  -p<STRING>     Prefix for output files [default: name of alignment w/o .ext]" << endl;
-	cout << "  -g<LIST>       Grouping of sites, e.g. 0,1,-2 for duplets, 0,1,2 for codons" << endl;
+	cout << "  -g<LIST>       Grouping of sites, e.g. 1,2,-3 for duplets, 1,2,3 for codons" << endl;
 	cout << endl;
 	cout << "  -x             Write extended output files with test results" << endl;
 	cout << "  -w<NUM>,[NUM]  Window size and step width for symmetry test" << endl;
@@ -192,8 +187,7 @@ int main(int argc, char** argv)
 	cout << PROGDATE << endl << endl;
 
 	int ret = parseArguments(argc, argv, &options);
-	if (ret)
-		return ret;
+	if (ret) return ret;
 
 	if (!options.inputAlignment.length() || options.help)
 	{
@@ -212,7 +206,7 @@ int main(int argc, char** argv)
 	} catch (string& s)
 	{
 		cerr << s << endl;
-		return(255);
+		return (255);
 	}
 
 	return 0;

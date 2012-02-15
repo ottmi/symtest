@@ -23,14 +23,13 @@ void Sequence::translateToNum(int dataType, Options *options)
     else
 	_unambiguousThreshold = _ALPHANUM_UNAMB_THRES;
 
-    unsigned int numOfSites = (_sequence.length() - options->groupOffset) / options->groupLength;
+	unsigned int numOfSites = _sequence.length() / options->groupLength;
     for (unsigned int i = 0; i < numOfSites; i++)
     {
 	vector<int> cols;
 	for (unsigned int j = 0; j < options->grouping.size(); j++)
-	    cols.push_back(options->groupOffset + options->groupLength * i + options->grouping[j]);
+			cols.push_back(options->groupLength * i + options->grouping[j] - 1);
 	_numericSeq.push_back(mapCharToNum(getColumns(cols), dataType));
-
     }
 
 }
