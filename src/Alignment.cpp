@@ -125,9 +125,9 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 	resultsFile << "Seq1\tSeq2\tChi-square\tdf\tp-value\tDelta_s\tDelta_ms\tSites\tStart\tEnd" << endl;
 	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep)
 	{
-		vector<double> bowker_mat(n * n, 0);
-		vector<double> ds_mat(n * n, 0);
-		vector<double> dms_mat(n * n, 0);
+		double bowker_mat[n][n];
+		double ds_mat[n][n];
+		double dms_mat[n][n];
 		for (unsigned int k = 0; k < n; k++) // 1st sequence
 		{
 			Sequence s1 = _alignment[k];
@@ -181,12 +181,12 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 
 				double Q = 1.0;
 				if (df > 0) Q = gammq((df / 2.0), (bowker / 2.0));
-				bowker_mat[k * n + l] = Q;
-				bowker_mat[l * n + k] = Q;
+				bowker_mat[k][l] = Q;
+				bowker_mat[l][k] = Q;
 
 				delta_s = sqrt(delta_s);
-				ds_mat[k * n + l] = delta_s;
-				ds_mat[l * n + k] = delta_s;
+				ds_mat[k][l] = delta_s;
+				ds_mat[l][k] = delta_s;
 
 				double delta_ms = 0.0;
 				for (int i = 0; i < dim; i++)
@@ -209,8 +209,8 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 					delta_ms += ((row - col) / sum) * ((row - col) / sum);
 				}
 				delta_ms = sqrt(delta_ms) / sqrt(2.0);
-				dms_mat[k * n + l] = delta_ms;
-				dms_mat[l * n + k] = delta_ms;
+				dms_mat[k][l] = delta_ms;
+				dms_mat[l][k] = delta_ms;
 
 				resultsFile << _alignment[k].getName() << "\t" << _alignment[l].getName() << "\t" << scientific << bowker << "\t" << df << "\t" << Q << "\t" << delta_s
 						<< "\t" << delta_ms << "\t" << sum << "\t" << windowStart << "\t" << windowStart + windowSize - 1 << endl;
@@ -244,9 +244,9 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 				delta_msFile << setw(12) << _alignment[k].getName();
 				for (unsigned int l = 0; l < n; l++)
 				{
-					bowkerFile << "\t" << scientific << bowker_mat[k * n + l];
-					delta_sFile << "\t" << scientific << ds_mat[k * n + l];
-					delta_msFile << "\t" << scientific << dms_mat[k * n + l];
+					bowkerFile << "\t" << scientific << bowker_mat[k][l];
+					delta_sFile << "\t" << scientific << ds_mat[k][l];
+					delta_msFile << "\t" << scientific << dms_mat[k][l];
 				}
 				bowkerFile << endl;
 				delta_sFile << endl;
