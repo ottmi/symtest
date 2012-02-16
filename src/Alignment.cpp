@@ -128,6 +128,9 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 		double bowker_mat[n][n];
 		double ds_mat[n][n];
 		double dms_mat[n][n];
+		vector<unsigned int> count(10, 0);
+		unsigned int counter = 0;
+		double minQ = 1.0;
 		for (unsigned int k = 0; k < n; k++) // 1st sequence
 		{
 			Sequence s1 = _alignment[k];
@@ -184,6 +187,18 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 				bowker_mat[k][l] = Q;
 				bowker_mat[l][k] = Q;
 
+				if(Q < minQ) minQ = Q;
+				if(Q < 0.05) count[0]++;
+				if(Q < 0.01) count[1]++;
+				if(Q < 0.005) count[2]++;
+				if(Q < 0.001) count[3]++;
+				if(Q < 0.0005) count[4]++;
+				if(Q < 0.0001) count[5]++;
+				if(Q < 0.00005) count[6]++;
+				if(Q < 0.00001) count[7]++;
+				if(Q < 0.000005) count[8]++;
+				if(Q < 0.000001) count[9]++;
+
 				delta_s = sqrt(delta_s);
 				ds_mat[k][l] = delta_s;
 				ds_mat[l][k] = delta_s;
@@ -214,8 +229,9 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 
 				resultsFile << _alignment[k].getName() << "\t" << _alignment[l].getName() << "\t" << scientific << bowker << "\t" << df << "\t" << Q << "\t" << delta_s
 						<< "\t" << delta_ms << "\t" << sum << "\t" << windowStart << "\t" << windowStart + windowSize - 1 << endl;
-			}
 
+				counter++;
+			}
 		}
 
 		if (extended)
@@ -253,6 +269,22 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 				delta_msFile << endl;
 			}
 		}
+
+		cout << endl << "Highlights from the analysis (window "<< windowStart << "-" << windowStart + windowSize - 1 << "):" << endl;
+		cout.precision(2);
+		if(minQ < 0.05)     cout << "P-values < 0.05                 " << setw(8) << count[0] << " (" << fixed << (double) count[0]*100/counter << "%)" << endl;
+		if(minQ < 0.01)     cout << "P-values < 0.01                 " << setw(8) << count[1] << " (" << fixed << (double) count[1]*100/counter << "%)" << endl;
+		if(minQ < 0.005)    cout << "P-values < 0.005                " << setw(8) << count[2] << " (" << fixed << (double) count[2]*100/counter << "%)" << endl;
+		if(minQ < 0.001)    cout << "P-values < 0.001                " << setw(8) << count[3] << " (" << fixed << (double) count[3]*100/counter << "%)" << endl;
+		if(minQ < 0.0005)   cout << "P-values < 0.0005               " << setw(8) << count[4] << " (" << fixed << (double) count[4]*100/counter << "%)" << endl;
+		if(minQ < 0.0001)   cout << "P-values < 0.0001               " << setw(8) << count[5] << " (" << fixed << (double) count[5]*100/counter << "%)" << endl;
+		if(minQ < 0.00005)  cout << "P-values < 0.00005              " << setw(8) << count[6] << " (" << fixed << (double) count[6]*100/counter << "%)" << endl;
+		if(minQ < 0.00001)  cout << "P-values < 0.00001              " << setw(8) << count[7] << " (" << fixed << (double) count[7]*100/counter << "%)" << endl;
+		if(minQ < 0.000005) cout << "P-values < 0.000005             " << setw(8) << count[8] << " (" << fixed << (double) count[8]*100/counter << "%)" << endl;
+		if(minQ < 0.000001) cout << "P-values < 0.000001             " << setw(8) << count[9] << " (" << fixed << (double) count[9]*100/counter << "%)" << endl;
+		cout << "Number of tests                   " << setw(15) << counter << endl;
+		cout.precision(8);
+		cout << "Smallest P-value                  " << setw(15) << scientific << minQ << endl;
 	}
 	resultsFile.close();
 	if (extended)
