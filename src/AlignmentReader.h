@@ -21,7 +21,6 @@ public:
 private:
 	ifstream _fileReader;
 	string _lastLine;
-	vector<Sequence> _sequences;
 	int _format; // 0=fasta, 1=phylip
 	int _rows;
 	int _cols;

@@ -46,8 +46,19 @@ AlignmentReader::AlignmentReader(string fileName)
 			}
 		}
 	}
+}
 
+AlignmentReader::~AlignmentReader()
+{
+	if (!_fileReader.is_open()) _fileReader.close();
+}
+
+vector<Sequence> AlignmentReader::getSequences(int from, int to)
+{
 	string whiteSpace = " \n\t";
+	vector<Sequence> sequences;
+
+	if (from == -1) from = 1;
 
 	if (_format == _FASTA_FORMAT)
 	{
@@ -56,9 +67,9 @@ AlignmentReader::AlignmentReader(string fileName)
 
 		while (!_fileReader.eof())
 		{
-			string header;
+			string name;
 			string seq;
-			header = _lastLine;
+			name = _lastLine;
 			_lastLine = "";
 			while (!_fileReader.eof() && _lastLine[0] != '>')
 			{
@@ -66,13 +77,23 @@ AlignmentReader::AlignmentReader(string fileName)
 				if (_lastLine[0] != '>') seq += _lastLine;
 			}
 			seq = adjustString(seq, false);
-			header = adjustString(header.substr(1), false);
-			if (header.length() > 1 && seq.length())
+			name = adjustString(name.substr(1), false);
+			if (name.length() > 1 && seq.length())
 			{
-				Sequence s(header, seq);
-				_sequences.push_back(s);
+				if (_cols & seq.length() != (unsigned int) _cols)
+				{
+					stringstream ss;
+					ss << "Sequence #" << sequences.size() + 1 << " (" << name << ") consists of " << seq.length() << " characters. All previous sequences consisted of "
+							<< _cols << " characters.";
+					throw(ss.str());
+				} else
+					_cols = (int) seq.length();
+
+				if (to == -1)
+					sequences.push_back(Sequence(name, seq.substr(from - 1)));
+				else
+					sequences.push_back(Sequence(name, seq.substr(from - 1, to - from + 1)));
 				_rows++;
-				if (seq.length() > (unsigned int) _cols) _cols = seq.length();
 			}
 		}
 	} else if (_format == _PHYLIP_FORMAT)
@@ -95,42 +116,27 @@ AlignmentReader::AlignmentReader(string fileName)
 					seq = _lastLine.substr(n);
 				}
 
-				if ((int) seq.length() != _cols)
-					cerr << "Sequence #" << _sequences.size() + 1 << " (" << name << ") consists of " << seq.length() << " characters when it should be " << _cols << "."
-							<< endl;
 				seq = adjustString(seq, false);
 				if (name.length() && seq.length())
 				{
-					Sequence s(name, seq);
-					_sequences.push_back(s);
+					if (seq.length() != (unsigned int) _cols)
+					{
+						stringstream ss;
+						ss << "Sequence #" << sequences.size() + 1 << " (" << name << ") consists of " << seq.length() << " characters when it should be " << _cols << ".";
+						throw(ss.str());
+					}
+
+					if (to == -1)
+						sequences.push_back(Sequence(name, seq.substr(from - 1)));
+					else
+						sequences.push_back(Sequence(name, seq.substr(from - 1, to - from + 1)));
 				}
 			}
 		}
-		if ((int) _sequences.size() < _rows) cerr << "The alignment contains only " << _sequences.size() << " rows, but it should be " << _rows << "." << endl;
+		if ((int) sequences.size() < _rows) cerr << "The alignment contains only " << sequences.size() << " rows, but it should be " << _rows << "." << endl;
 	}
-}
 
-AlignmentReader::~AlignmentReader()
-{
-	if (!_fileReader.is_open()) _fileReader.close();
-}
+	_cols = sequences[0].getLength();
 
-vector<Sequence> AlignmentReader::getSequences(int from, int to)
-{
-	if (from == -1 && to == -1)
-		return _sequences;
-	else
-	{
-		vector<Sequence> sequences;
-		for (unsigned int i = 0; i < _sequences.size(); i++)
-		{
-			string name = _sequences[i].getName();
-			string seq = _sequences[i].getSequence();
-			if (to == -1)
-				sequences.push_back(Sequence(name, seq.substr(from - 1)));
-			else
-				sequences.push_back(Sequence(name, seq.substr(from - 1, to - from + 1)));
-		}
-		return sequences;
-	}
+	return sequences;
 }

@@ -21,19 +21,7 @@ Alignment::Alignment(Options *options)
 {
 	AlignmentReader alignmentReader(options->inputAlignment);
 	_alignment = alignmentReader.getSequences(options->columnFrom, options->columnTo);
-
 	_cols = alignmentReader.getCols();
-	if (options->columnTo > (int) _cols)
-	{
-		stringstream ss;
-		ss << options->columnTo << " has been specified as upper boundary for the alignment columns to be read, but the alignment contains only " << _cols
-				<< " columns.";
-		throw(ss.str());
-	}
-	if (options->columnFrom > 0 && options->columnTo > 0)
-		_cols = options->columnTo - options->columnFrom + 1;
-	else if (options->columnFrom > 0) _cols -= (options->columnFrom - 1);
-	cout << _cols << endl;
 	_cols /= options->groupLength;
 
 	string dataTypeDesc[] = { "DNA", "AA", "alphanumeric" };
