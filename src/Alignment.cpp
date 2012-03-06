@@ -133,6 +133,9 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 		double minQ = 1.0;
 		for (unsigned int k = 0; k < n; k++) // 1st sequence
 		{
+			bowker_mat[k][k] = 0;
+			ds_mat[k][k] = 0;
+			dms_mat[k][k] = 0;
 			Sequence s1 = _alignment[k];
 			for (unsigned int l = k + 1; l < n; l++) // 2nd sequence
 			{
