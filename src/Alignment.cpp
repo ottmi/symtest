@@ -109,7 +109,7 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 	resultsFile.open(resultsFileName.c_str(), ifstream::trunc);
 	if (!resultsFile.is_open()) throw("Error, cannot open file " + resultsFileName);
 
-	unsigned int n = _alignment.size();
+	unsigned int len = _alignment.size();
 	if (windowSize <= 0) windowSize = _cols;
 	if (windowStep <= 0) windowStep = windowSize;
 
@@ -126,23 +126,23 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 	resultsFile << "Seq1\tSeq2\tChi-square\tdf\tp-value\tDelta_s\tDelta_ms\tSites\tStart\tEnd" << endl;
 	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep)
 	{
-		double bowker_mat[n][n];
-		double ds_mat[n][n];
-		double dms_mat[n][n];
+		double bowker_mat[len][len];
+		double ds_mat[len][len];
+		double dms_mat[len][len];
 		vector<unsigned int> count(10, 0);
 		unsigned int counter = 0;
 		double minQ = 1.0;
-		for (unsigned int k = 0; k < n; k++) // 1st sequence
+		for (unsigned int k = 0; k < len; k++) // 1st sequence
 		{
 			bowker_mat[k][k] = 0;
 			ds_mat[k][k] = 0;
 			dms_mat[k][k] = 0;
 			Sequence s1 = _alignment[k];
-			for (unsigned int l = k + 1; l < n; l++) // 2nd sequence
+			for (unsigned int l = k + 1; l < len; l++) // 2nd sequence
 			{
 				Sequence s2 = _alignment[l];
 				unsigned int sum = 0;
-				map<pair<unsigned int, unsigned int> , unsigned int> dmap;
+				map<pair<unsigned int, unsigned int> , unsigned int> nmap;
 				map<pair<unsigned int, unsigned int> , unsigned int>::iterator it;
 				unsigned long id;
 				for (unsigned int m = windowStart; m < windowStart + windowSize; m++)
@@ -152,23 +152,23 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 					if (s1.charIsUnambiguous(c1) && s2.charIsUnambiguous(c2))
 					{
 						pair<unsigned int, unsigned int> p(c1, c2);
-						if ((it = dmap.find(p)) != dmap.end())
+						if ((it = nmap.find(p)) != nmap.end())
 							it->second = it->second + 1;
 						else
-							dmap.insert(pair<pair<unsigned int, unsigned int> , unsigned int>(p, 1));
+							nmap.insert(pair<pair<unsigned int, unsigned int> , unsigned int>(p, 1));
 						sum++;
 					}
 				}
 
-				Matrix d(dim);
+				Matrix n(dim);
 				for (int i = 0; i < dim; i++)
 					for (int j = 0; j < dim; j++)
 					{
 						pair<unsigned int, unsigned int> p(i, j);
-						if ((it = dmap.find(p)) != dmap.end())
-							d(i,j) = it->second;
+						if ((it = nmap.find(p)) != nmap.end())
+							n(i,j) = it->second;
 						else
-							d(i,j) = 0;
+							n(i,j) = 0;
 					}
 
 				unsigned int df = 0;
@@ -178,13 +178,13 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 				{
 					for (int j = i + 1; j < dim; j++)
 					{
-						if (d(i,j) + d(j,i) > 0)
+						if (n(i,j) + n(j,i) > 0)
 						{
 							df++;
-							bowker += (double) ((d(i,j) - d(j,i)) * (d(i,j) - d(j,i))) / (d(i,j) + d(j,i));
+							bowker += (double) ((n(i,j) - n(j,i)) * (n(i,j) - n(j,i))) / (n(i,j) + n(j,i));
 						}
 
-						double x = d(j,i) - d(i,j);
+						double x = n(j,i) - n(i,j);
 						delta_s += (x / sum) * (x / sum);
 					}
 				}
@@ -213,8 +213,8 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 				double delta_ms = 0.0;
 				for (int i = 0; i < dim; i++)
 				{
-					double rowSum = d.getRowSum(i);
-					double colSum = d.getColSum(i);
+					double rowSum = n.getRowSum(i);
+					double colSum = n.getColSum(i);
 					delta_ms += ((rowSum - colSum) / sum) * ((rowSum - colSum) / sum);
 				}
 				delta_ms = sqrt(delta_ms) / sqrt(2.0);
@@ -237,7 +237,7 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 			delta_sFile << windowStart << "-" << windowStart + windowSize - 1;
 			delta_msFile << windowStart << "-" << windowStart + windowSize - 1;
 
-			for (unsigned int l = 0; l < n; l++)
+			for (unsigned int l = 0; l < len; l++)
 			{
 				bowkerFile << "\t" << setw(12) << _alignment[l].getName();
 				delta_sFile << "\t" << setw(12) << _alignment[l].getName();
@@ -247,12 +247,12 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 			delta_sFile << endl;
 			delta_msFile << endl;
 
-			for (unsigned int k = 0; k < n; k++)
+			for (unsigned int k = 0; k < len; k++)
 			{
 				bowkerFile << setw(12) << _alignment[k].getName();
 				delta_sFile << setw(12) << _alignment[k].getName();
 				delta_msFile << setw(12) << _alignment[k].getName();
-				for (unsigned int l = 0; l < n; l++)
+				for (unsigned int l = 0; l < len; l++)
 				{
 					bowkerFile << "\t" << scientific << bowker_mat[k][l];
 					delta_sFile << "\t" << scientific << ds_mat[k][l];
