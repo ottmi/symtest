@@ -10,6 +10,7 @@
 #include <utility>
 #include "AlignmentReader.h"
 #include "Alignment.h"
+#include "Matrix.h"
 #include "helper.h"
 
 Alignment::Alignment()
@@ -159,15 +160,15 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 					}
 				}
 
-				int d[dim][dim];
+				Matrix d(dim);
 				for (int i = 0; i < dim; i++)
 					for (int j = 0; j < dim; j++)
 					{
 						pair<unsigned int, unsigned int> p(i, j);
 						if ((it = dmap.find(p)) != dmap.end())
-							d[i][j] = it->second;
+							d(i,j) = it->second;
 						else
-							d[i][j] = 0;
+							d(i,j) = 0;
 					}
 
 				unsigned int df = 0;
@@ -177,13 +178,13 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 				{
 					for (int j = i + 1; j < dim; j++)
 					{
-						if (d[i][j] + d[j][i] > 0)
+						if (d(i,j) + d(j,i) > 0)
 						{
 							df++;
-							bowker += (double) ((d[i][j] - d[j][i]) * (d[i][j] - d[j][i])) / (d[i][j] + d[j][i]);
+							bowker += (double) ((d(i,j) - d(j,i)) * (d(i,j) - d(j,i))) / (d(i,j) + d(j,i));
 						}
 
-						double x = d[j][i] - d[i][j];
+						double x = d(j,i) - d(i,j);
 						delta_s += (x / sum) * (x / sum);
 					}
 				}
@@ -216,8 +217,8 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 					double col = 0.0;
 					for (int j = 0; j < dim; j++)
 					{
-						row += d[i][j];
-						col += d[j][i];
+						row += d(i,j);
+						col += d(j,i);
 					}
 					delta_ms += ((row - col) / sum) * ((row - col) / sum);
 				}
