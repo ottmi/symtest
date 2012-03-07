@@ -97,70 +97,67 @@ unsigned int mapCharToNum(string s, int dataType)
 
 				case 'U':
 				case 'u':
-					d += 0x04;
-					break;
-
 				case 'R':
 				case 'r':
-					d += 0x05;
+					d += 0x04;
 					break;
 
 				case 'Y':
 				case 'y':
-					d += 0x06;
+					d += 0x05;
 					break;
 
 				case 'K':
 				case 'k':
-					d += 0x07;
+					d += 0x06;
 					break;
 
 				case 'M':
 				case 'm':
-					d += 0x08;
+					d += 0x07;
 					break;
 
 				case 'S':
 				case 's':
-					d += 0x09;
+					d += 0x08;
 					break;
 
 				case 'W':
 				case 'w':
-					d += 0x0a;
+					d += 0x09;
 					break;
 
 				case 'B':
 				case 'b':
-					d += 0x0b;
+					d += 0x0a;
 					break;
 
 				case 'D':
 				case 'd':
-					d += 0x0c;
+					d += 0x0b;
 					break;
 
 				case 'H':
 				case 'h':
-					d += 0x0d;
+					d += 0x0c;
 					break;
 
 				case 'V':
 				case 'v':
-					d += 0x0e;
+					d += 0x0d;
 					break;
 
 				case 'N':
 				case 'n':
-					d += 0x0f;
+					d += 0x0e;
 					break;
 
 				case '?':
-					d += 0x10;
+					d += 0x0f;
 					break;
 
 				default:
-					d += 0x11;
+					d += 0x10;
 					break;
 			}
 		}

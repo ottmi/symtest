@@ -117,7 +117,7 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 
 	int dim;
 	if (_dataType == _DNA_DATA)
-		dim = 5;
+		dim = 4;
 	else if (_dataType == _AA_DATA)
 		dim = 20;
 	else
