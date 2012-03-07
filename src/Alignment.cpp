@@ -213,14 +213,9 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 				double delta_ms = 0.0;
 				for (int i = 0; i < dim; i++)
 				{
-					double row = 0.0;
-					double col = 0.0;
-					for (int j = 0; j < dim; j++)
-					{
-						row += d(i,j);
-						col += d(j,i);
-					}
-					delta_ms += ((row - col) / sum) * ((row - col) / sum);
+					double rowSum = d.getRowSum(i);
+					double colSum = d.getColSum(i);
+					delta_ms += ((rowSum - colSum) / sum) * ((rowSum - colSum) / sum);
 				}
 				delta_ms = sqrt(delta_ms) / sqrt(2.0);
 				dms_mat[k][l] = delta_ms;
