@@ -141,7 +141,7 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 			{
 				Sequence s2 = _alignment[l];
 				unsigned int sum = 0;
-				map<pair<unsigned int, unsigned int> , unsigned int> dm;
+				map<pair<unsigned int, unsigned int> , unsigned int> dmap;
 				map<pair<unsigned int, unsigned int> , unsigned int>::iterator it;
 				unsigned long id;
 				for (unsigned int m = windowStart; m < windowStart + windowSize; m++)
@@ -151,13 +151,24 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 					if (s1.charIsUnambiguous(c1) && s2.charIsUnambiguous(c2))
 					{
 						pair<unsigned int, unsigned int> p(c1, c2);
-						if ((it = dm.find(p)) != dm.end())
+						if ((it = dmap.find(p)) != dmap.end())
 							it->second = it->second + 1;
 						else
-							dm.insert(pair<pair<unsigned int, unsigned int> , unsigned int>(p, 1));
+							dmap.insert(pair<pair<unsigned int, unsigned int> , unsigned int>(p, 1));
 						sum++;
 					}
 				}
+
+				int d[dim][dim];
+				for (int i = 0; i < dim; i++)
+					for (int j = 0; j < dim; j++)
+					{
+						pair<unsigned int, unsigned int> p(i, j);
+						if ((it = dmap.find(p)) != dmap.end())
+							d[i][j] = it->second;
+						else
+							d[i][j] = 0;
+					}
 
 				unsigned int df = 0;
 				double bowker = .0;
@@ -166,21 +177,13 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 				{
 					for (int j = i + 1; j < dim; j++)
 					{
-						double dm_ij = 0;
-						pair<unsigned int, unsigned int> p1(i, j);
-						if ((it = dm.find(p1)) != dm.end()) dm_ij = it->second;
-
-						double dm_ji = 0;
-						pair<unsigned int, unsigned int> p2(j, i);
-						if ((it = dm.find(p2)) != dm.end()) dm_ji = it->second;
-
-						if (dm_ij + dm_ji > 0)
+						if (d[i][j] + d[j][i] > 0)
 						{
 							df++;
-							bowker += ((dm_ij - dm_ji) * (dm_ij - dm_ji)) / (dm_ij + dm_ji);
+							bowker += (double) ((d[i][j] - d[j][i]) * (d[i][j] - d[j][i])) / (d[i][j] + d[j][i]);
 						}
 
-						double x = dm_ji - dm_ij;
+						double x = d[j][i] - d[i][j];
 						delta_s += (x / sum) * (x / sum);
 					}
 				}
@@ -213,16 +216,8 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 					double col = 0.0;
 					for (int j = 0; j < dim; j++)
 					{
-						double dm_ij = 0;
-						pair<unsigned int, unsigned int> p1(i, j);
-						if ((it = dm.find(p1)) != dm.end()) dm_ij = it->second;
-
-						double dm_ji = 0;
-						pair<unsigned int, unsigned int> p2(j, i);
-						if ((it = dm.find(p2)) != dm.end()) dm_ji = it->second;
-
-						row += dm_ij;
-						col += dm_ji;
+						row += d[i][j];
+						col += d[j][i];
 					}
 					delta_ms += ((row - col) / sum) * ((row - col) / sum);
 				}
