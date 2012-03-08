@@ -81,10 +81,11 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 {
 	string resultsFileName = prefix + ".symmetry.csv";
 	string bowkerFileName = prefix + ".bowker.csv";
-	string stuartFileName = prefix + ".stuart.csv";
 	string delta_sFileName = prefix + ".delta_s.csv";
 	string delta_msFileName = prefix + ".delta_ms.csv";
-	ofstream resultsFile, bowkerFile, delta_sFile, delta_msFile, stuartFile;
+	string stuartFileName = prefix + ".stuart.csv";
+	string internalFileName = prefix + ".internal.csv";
+	ofstream resultsFile, bowkerFile, delta_sFile, delta_msFile, stuartFile, internalFile;
 	cout << endl << "Performing tests of pairwise symmetry, writing results to: ";
 	if (extended)
 	{
@@ -94,6 +95,7 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 		cout << "  delta_s distance matrix:   " << delta_sFileName << endl;
 		cout << "  delta_ms distance matrix:  " << delta_msFileName << endl;
 		cout << "  Stuart matrix:             " << stuartFileName << endl;
+		cout << "  Internal Symmetry:         " << internalFileName << endl;
 
 		bowkerFile.open(bowkerFileName.c_str(), ifstream::trunc);
 		if (!bowkerFile.is_open()) throw("Error, cannot open file " + bowkerFileName);
@@ -106,7 +108,10 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 
 		stuartFile.open(stuartFileName.c_str(), ifstream::trunc);
 		if (!stuartFile.is_open()) throw("Error, cannot open file " + stuartFileName);
-	} else
+
+		internalFile.open(internalFileName.c_str(), ifstream::trunc);
+		if (!internalFile.is_open()) throw("Error, cannot open file " + internalFileName);
+} else
 	{
 		cout << resultsFileName << endl;
 	}
@@ -129,13 +134,14 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 		dim = 36;
 
 	cout.precision(6);
-	resultsFile << "Seq1\tSeq2\tChi-square\tdf\tp-value\tDelta_s\tDelta_ms\tStuart\tSites\tStart\tEnd" << endl;
+	resultsFile << "Seq1\tSeq2\tChi-square\tdf\tp-value\tDelta_s\tDelta_ms\tStuart\tInternal\tSites\tStart\tEnd" << endl;
 	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep)
 	{
 		double bowker_mat[len][len];
 		double ds_mat[len][len];
 		double dms_mat[len][len];
 		double stuart_mat[len][len];
+		double internal_mat[len][len];
 		vector<unsigned int> count(10, 0);
 		unsigned int counter = 0;
 		double minQ = 1.0;
@@ -248,12 +254,16 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 						stuart+= V(i, j) * d_i * d_j;
 					}
 				}
-				stuart = gammq(1.5, (stuart / 2.0));
-				stuart_mat[k][l] = stuart;
-				stuart_mat[l][k] = stuart;
+				stuart_mat[k][l] = gammq(1.5, (stuart / 2.0));
+				stuart_mat[l][k] = stuart_mat[k][l];
+
+				double internal = bowker - stuart;
+				internal_mat[k][l] = gammq(1.5, (internal / 2.0));
+				internal_mat[l][k] = internal_mat[k][l];
+
 
 				resultsFile << _alignment[k].getName() << "\t" << _alignment[l].getName() << "\t" << scientific << bowker << "\t" << df << "\t" << Q << "\t" << delta_s
-						<< "\t" << delta_ms << "\t" << stuart << "\t" << sum << "\t" << windowStart << "\t" << windowStart + windowSize - 1 << endl;
+						<< "\t" << delta_ms << "\t" << stuart_mat[k][l] << "\t" << internal_mat[k][l] << "\t" << sum << "\t" << windowStart << "\t" << windowStart + windowSize - 1 << endl;
 
 				counter++;
 			}
@@ -264,10 +274,13 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 			bowkerFile.flags(ios::left);
 			delta_sFile.flags(ios::left);
 			delta_msFile.flags(ios::left);
+			stuartFile.flags(ios::left);
+			internalFile.flags(ios::left);
 			bowkerFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 			delta_sFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 			delta_msFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 			stuartFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
+			internalFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 
 			for (unsigned int l = 0; l < len; l++)
 			{
@@ -275,11 +288,13 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 				delta_sFile << "\t" << setw(12) << _alignment[l].getName();
 				delta_msFile << "\t" << setw(12) << _alignment[l].getName();
 				stuartFile << "\t" << setw(12) << _alignment[l].getName();
+				internalFile << "\t" << setw(12) << _alignment[l].getName();
 			}
 			bowkerFile << endl;
 			delta_sFile << endl;
 			delta_msFile << endl;
 			stuartFile << endl;
+			internalFile << endl;
 
 			for (unsigned int k = 0; k < len; k++)
 			{
@@ -287,14 +302,17 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 				delta_sFile.flags(ios::left);
 				delta_msFile.flags(ios::left);
 				stuartFile.flags(ios::left);
+				internalFile.flags(ios::left);
 				bowkerFile << setw(12) << _alignment[k].getName();
 				delta_sFile << setw(12) << _alignment[k].getName();
 				delta_msFile << setw(12) << _alignment[k].getName();
 				stuartFile << setw(12) << _alignment[k].getName();
+				internalFile << setw(12) << _alignment[k].getName();
 				bowkerFile.flags(ios::right);
 				delta_sFile.flags(ios::right);
 				delta_msFile.flags(ios::right);
 				stuartFile.flags(ios::right);
+				internalFile.flags(ios::right);
 				for (unsigned int l = 0; l < len; l++)
 				{
 					if (k == l)
@@ -303,6 +321,7 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 						delta_sFile  << "\t      -      ";
 						delta_msFile << "\t      -      ";
 						stuartFile   << "\t      -      ";
+						internalFile   << "\t      -      ";
 					}
 					else
 					{
@@ -310,12 +329,14 @@ void Alignment::testSymmetry(string prefix, bool extended, int windowSize, int w
 						delta_sFile << "\t" << scientific << ds_mat[k][l];
 						delta_msFile << "\t" << scientific << dms_mat[k][l];
 						stuartFile << "\t" << scientific << bowker_mat[k][l];
+						internalFile << "\t" << scientific << internal_mat[k][l];
 					}
 				}
 				bowkerFile << endl;
 				delta_sFile << endl;
 				delta_msFile << endl;
 				stuartFile << endl;
+				internalFile << endl;
 			}
 		}
 
