@@ -10,6 +10,7 @@
 #endif
 
 #include <string>
+#include <sstream>
 using namespace std;
 
 double factorial(int n);
@@ -22,5 +23,12 @@ void gcf(double *gammcf, double a, double x, double *gln);
 void gser(double *gamser, double a, double x, double *gln);
 double gammln(double xx);
 double gammq(double a, double x);
+
+template<class T> string str(const T& t)
+{
+	stringstream ss;
+	ss << t;
+	return ss.str();
+}
 
 #endif /* HELPER_H_ */

@@ -11,21 +11,30 @@ public:
 	virtual ~Matrix();
 	double& operator() (unsigned row, unsigned col);
 	double  operator() (unsigned row, unsigned col) const;
+	Matrix operator*(Matrix const &m) const;
+
 	void zero();
-	void set(vector< vector<double> > m);
-	void set(vector<double> m);
-	void setDiag(double x);
-	void setOffDiag(double x);
-	void setRow(unsigned int row, vector<double> m);
-	void setCol(unsigned int col, vector<double> m);
-	void update(Matrix& x);
+	void identity();
 
-	double getRowSum(unsigned int row);
-	double getColSum(unsigned int col);
+	void set(vector< vector<double> > const &m);
+	void set(vector<double> const &m);
+	void setDiag(double const x);
+	void setDiag(vector<double> const &x);
+	void setOffDiag(double const x);
+	void setRow(unsigned int const row, vector<double> const &m);
+	void setCol(unsigned int const col, vector<double> const &m);
 
-	double determinant();
+	double getRowSum(unsigned int const row) const;
+	vector<double> getRowSums() const;
+	double getColSum(unsigned int const col) const;
+	vector<double> getColSums() const;
 
-	void print();
+	void inverse();
+	double determinant() const;
+
+	void luDecomposition();
+	Matrix luEvaluate(Matrix &a);
+	void print() const;
 
 
 private:
