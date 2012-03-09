@@ -224,7 +224,10 @@ int main(int argc, char** argv)
 	try
 	{
 		Alignment alignment = Alignment(&options);
-		alignment.testSymmetry(options.prefix, options.writeExtendedTestResults, options.windowSize, options.windowStep);
+		alignment.testSymmetry(options.prefix, options.windowSize, options.windowStep);
+		alignment.writeSummary(options.prefix, options.windowSize, options.windowStep);
+		if (options.writeExtendedTestResults)
+			alignment.writeExtendedResults(options.prefix, options.windowSize, options.windowStep);
 	} catch (string& s)
 	{
 		cerr << s << endl;
