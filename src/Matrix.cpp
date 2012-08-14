@@ -238,7 +238,7 @@ Matrix Matrix::luEvaluate(Matrix &b)
 
 	for (unsigned int i = 0; i < _dim; i++)
 		if (_m[i][i] == .0)
-			throw("The Matrix appears to be singular");
+			throw(string("The Matrix appears to be singular"));
 
 	// Forward solve LY = B
   for (unsigned int i = 0; i < _dim; i++)
