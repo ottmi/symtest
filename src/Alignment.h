@@ -37,6 +37,7 @@ private:
 	vector< vector<double> > _ds;
 	vector< vector<double> > _dms;
 	vector< vector<double> > _stuart;
+	vector< vector<double> > _aitchison;
 };
 
 #endif /* ALIGNMENT_H_ */

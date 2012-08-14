@@ -97,14 +97,35 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep)
 	cout.precision(6);
 	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep)
 	{
+		vector< vector<double> > baseFrequencies;
 		vector<unsigned int> dfList;
 		vector<double> bowkerList;
 		vector<double> dsList;
 		vector<double> dmsList;
 		vector<double> stuartList;
+		vector<double> aitchisonList;
+
 		for (unsigned int k = 0; k < len; k++) // 1st sequence
 		{
 			Sequence s1 = _alignment[k];
+			vector<unsigned long> baseOccurences(_dim, 0);
+			for (unsigned int m = windowStart; m < windowStart + windowSize; m++)
+			{
+			    unsigned int c = s1.getNumerical(m);
+			    if (s1.charIsUnambiguous(c))
+				baseOccurences[c]++;
+			}
+
+			if (verbose) cout << "baseFreq[" << k << "]:";
+			vector<double> baseFreq(_dim);
+			for (unsigned int c = 0; c < _dim; c++)
+			{
+			    baseFreq[c] = ((double) baseOccurences[c] + (1.0 / _dim)) / (windowSize + 1);
+			    if (verbose) cout << baseFreq[c] << " ";
+			}
+			baseFrequencies.push_back(baseFreq);
+			if (verbose) cout << endl;
+
 			for (unsigned int l = k + 1; l < len; l++) // 2nd sequence
 			{
 				Sequence s2 = _alignment[l];
@@ -190,11 +211,32 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep)
 				stuartList.push_back(stuart);
 			}
 		}
+
+		for (unsigned int k = 0; k < len; k++) // 1st sequence
+		    for (unsigned int l = k + 1; l < len; l++) // 2nd sequence
+		    {
+			double aitchison = .0;
+			for (unsigned int i = 0; i < _dim; i++)
+			{
+			    double x_i = baseFrequencies[k][i];
+			    double y_i = baseFrequencies[l][i];
+			    for (unsigned int j = 0; j < _dim; j++)
+			    {
+				double x_j = baseFrequencies[k][j];
+				double y_j = baseFrequencies[l][j];
+				double logDiff = log(x_i / x_j) - log(y_i / y_j);
+				aitchison+= (logDiff * logDiff) / (2 * _dim);
+			    }
+			}
+			aitchisonList.push_back(aitchison);
+		    }
+
 		_df.push_back(dfList);
 		_bowker.push_back(bowkerList);
 		_ds.push_back(dsList);
 		_dms.push_back(dmsList);
 		_stuart.push_back(stuartList);
+		_aitchison.push_back(aitchisonList);
 	}
 }
 
@@ -215,7 +257,8 @@ void Alignment::writeSummary(string prefix, int windowSize, int windowStep)
 	resultsFile	<< "\tBowker_X^2\tdf_B\tp_B";
 	resultsFile << "\tStuart_X^2\tdf_S\tp_S";
 	resultsFile << "\tAbabneh_X^2\tdf_A\tp_A";
-	resultsFile << "\tDelta_s\tDelta_ms\tStart\tEnd" << endl;
+	resultsFile << "\tAitchison\tDelta_s\tDelta_ms";
+	resultsFile << "\tStart\tEnd" << endl;
 
 	unsigned int i = 0;
 	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep)
@@ -242,11 +285,14 @@ void Alignment::writeSummary(string prefix, int windowSize, int windowStep)
 				double ds = _ds[i][j];
 				double dms = _dms[i][j];
 
+				double aitchison = _aitchison[i][j];
+
 				resultsFile << _alignment[k].getName() << "\t" << _alignment[l].getName() << scientific;
 				resultsFile << "\t" << bowker << "\t" << dfB << "\t" << pBowker;
 				resultsFile << "\t" << stuart << "\t" << dfS << "\t" << pStuart;
 				resultsFile << "\t" << ababneh << "\t" << dfA << "\t" << pAbabneh;
-				resultsFile << "\t"	<< ds << "\t" << dms << "\t" << windowStart << "\t" << windowStart + windowSize - 1 << endl;
+				resultsFile << "\t" << aitchison << "\t" << ds << "\t" << dms;
+				resultsFile << "\t" << windowStart << "\t" << windowStart + windowSize - 1 << endl;
 
 				if (pBowker < minP) minP = pBowker;
 				if (pBowker < 0.05) count[0]++;
