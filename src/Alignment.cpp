@@ -338,20 +338,22 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 	string delta_msFileName = prefix + ".delta_ms.csv";
 	string stuartFileName = prefix + ".stuart.csv";
 	string ababnehFileName = prefix + ".ababneh.csv";
+	string aitchisonFileName = prefix + ".aitchison.csv";
 
 	cout << endl;
 	cout << "Writing extended results to:" << endl;
-	cout << "  Bowker\'s test:            " << bowkerFileName << endl;
-	cout << "  Stuart\'s test:            " << stuartFileName << endl;
-	cout << "  Ababneh\'s test:           " << ababnehFileName << endl;
-	cout << "  delta_s distance matrix:   " << delta_sFileName << endl;
-	cout << "  delta_ms distance matrix:  " << delta_msFileName << endl;
+	cout << "  Bowker\'s test:               " << bowkerFileName << endl;
+	cout << "  Stuart\'s test:               " << stuartFileName << endl;
+	cout << "  Ababneh\'s test:              " << ababnehFileName << endl;
+	cout << "  Aitchison\'s distance matrix: " << aitchisonFileName << endl;
+	cout << "  delta_s distance matrix:      " << delta_sFileName << endl;
+	cout << "  delta_ms distance matrix:     " << delta_msFileName << endl;
 
 	unsigned int len = _alignment.size();
 	if (windowSize <= 0) windowSize = _cols;
 	if (windowStep <= 0) windowStep = windowSize;
 
-	ofstream bowkerFile, stuartFile, ababnehFile, delta_sFile, delta_msFile;
+	ofstream bowkerFile, stuartFile, ababnehFile, aitchisonFile, delta_sFile, delta_msFile;
 	bowkerFile.open(bowkerFileName.c_str(), ifstream::trunc);
 	if (!bowkerFile.is_open()) throw("Error, cannot open file " + bowkerFileName);
 
@@ -360,6 +362,9 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 
 	ababnehFile.open(ababnehFileName.c_str(), ifstream::trunc);
 	if (!ababnehFile.is_open()) throw("Error, cannot open file " + ababnehFileName);
+
+	aitchisonFile.open(aitchisonFileName.c_str(), ifstream::trunc);
+	if (!aitchisonFile.is_open()) throw("Error, cannot open file " + aitchisonFileName);
 
 	delta_sFile.open(delta_sFileName.c_str(), ifstream::trunc);
 	if (!delta_sFile.is_open()) throw("Error, cannot open file " + delta_sFileName);
@@ -370,6 +375,7 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 	bowkerFile.flags(ios::left);
 	stuartFile.flags(ios::left);
 	ababnehFile.flags(ios::left);
+	aitchisonFile.flags(ios::left);
 	delta_sFile.flags(ios::left);
 	delta_msFile.flags(ios::left);
 
@@ -379,6 +385,7 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 		bowkerFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 		stuartFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 		ababnehFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
+		aitchisonFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 		delta_sFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 		delta_msFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 
@@ -387,12 +394,14 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 			bowkerFile << "\t" << setw(12) << _alignment[l].getName();
 			stuartFile << "\t" << setw(12) << _alignment[l].getName();
 			ababnehFile << "\t" << setw(12) << _alignment[l].getName();
+			aitchisonFile << "\t" << setw(12) << _alignment[l].getName();
 			delta_sFile << "\t" << setw(12) << _alignment[l].getName();
 			delta_msFile << "\t" << setw(12) << _alignment[l].getName();
 		}
 		bowkerFile << endl;
 		stuartFile << endl;
 		ababnehFile << endl;
+		aitchisonFile << endl;
 		delta_sFile << endl;
 		delta_msFile << endl;
 
@@ -402,16 +411,19 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 			bowkerFile.flags(ios::left);
 			stuartFile.flags(ios::left);
 			ababnehFile.flags(ios::left);
+			aitchisonFile.flags(ios::left);
 			delta_sFile.flags(ios::left);
 			delta_msFile.flags(ios::left);
 			bowkerFile << setw(12) << _alignment[k].getName();
 			stuartFile << setw(12) << _alignment[k].getName();
 			ababnehFile << setw(12) << _alignment[k].getName();
+			aitchisonFile << setw(12) << _alignment[k].getName();
 			delta_sFile << setw(12) << _alignment[k].getName();
 			delta_msFile << setw(12) << _alignment[k].getName();
 			bowkerFile.flags(ios::right);
 			stuartFile.flags(ios::right);
 			ababnehFile.flags(ios::right);
+			aitchisonFile.flags(ios::right);
 			delta_sFile.flags(ios::right);
 			delta_msFile.flags(ios::right);
 			for (unsigned int l = 1; l < len; l++)
@@ -421,6 +433,7 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 					bowkerFile   << "\t             ";
 					stuartFile   << "\t             ";
 					ababnehFile  << "\t             ";
+					aitchisonFile  << "\t             ";
 					delta_sFile  << "\t             ";
 					delta_msFile << "\t             ";
 				} else
@@ -438,12 +451,14 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 					double ababneh = bowker - stuart;
 					double pAbabneh = gammq(dfA / 2.0, (ababneh / 2.0));
 
+					double aitchison = _aitchison[i][j];
 					double ds = _ds[i][j];
 					double dms = _dms[i][j];
 
 					bowkerFile << "\t" << scientific << pBowker;
 					stuartFile << "\t" << scientific << pStuart;
 					ababnehFile << "\t" << scientific << pAbabneh;
+					aitchisonFile << "\t" << scientific << aitchison;
 					delta_sFile << "\t" << scientific << ds;
 					delta_msFile << "\t" << scientific << dms;
 					j++;
@@ -452,6 +467,7 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 			bowkerFile << endl;
 			stuartFile << endl;
 			ababnehFile << endl;
+			aitchisonFile << endl;
 			delta_sFile << endl;
 			delta_msFile << endl;
 		}
@@ -461,6 +477,7 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 	bowkerFile.close();
 	stuartFile.close();
 	ababnehFile.close();
+	aitchisonFile.close();
 	delta_sFile.close();
 	delta_msFile.close();
 }
