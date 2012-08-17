@@ -4,6 +4,7 @@
 #include <cfloat>
 #include <sstream>
 #include <cstdio>
+#include <unistd.h>
 #include "globals.h"
 #include "Alignment.h"
 #include "helper.h"
