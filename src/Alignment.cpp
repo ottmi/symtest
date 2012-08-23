@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <fstream>
 #include <algorithm>
+#include <limits>
 #include <cmath>
 #include <climits>
 #include <cfloat>
@@ -196,18 +197,23 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep)
 							V(i, j) = n.getRowSum(i) + n.getColSum(i) - 2 * n(i, i);
 						else
 							V(i, j) = -(n(i, j) + n(j, i));
-				V.inverse();
-
 				double stuart = 0;
-				for (unsigned int i = 0; i < _dim - 1; i++)
-				{
-					double d_i = n.getRowSum(i) - n.getColSum(i);
-					for (unsigned int j = 0; j < _dim - 1; j++)
+				try {
+					V.inverse();
+					for (unsigned int i = 0; i < _dim - 1; i++)
 					{
-						double d_j = n.getRowSum(j) - n.getColSum(j);
-						stuart += V(i, j) * d_i * d_j;
+						double d_i = n.getRowSum(i) - n.getColSum(i);
+						for (unsigned int j = 0; j < _dim - 1; j++)
+						{
+							double d_j = n.getRowSum(j) - n.getColSum(j);
+							stuart += V(i, j) * d_i * d_j;
+						}
 					}
+				} catch (string& s) {
+					cerr << "Error while inverting matrix for Stuart's test (" << k << "x" << l << "): " << s << endl;
+					stuart = numeric_limits<double>::quiet_NaN();
 				}
+
 				stuartList.push_back(stuart);
 			}
 		}
@@ -269,29 +275,37 @@ void Alignment::writeSummary(string prefix, int windowSize, int windowStep)
 		for (unsigned int k = 0; k < len; k++)
 			for (unsigned int l = k + 1; l < len; l++)
 			{
+				resultsFile << _alignment[k].getName() << "\t" << _alignment[l].getName() << scientific;
+
 				unsigned int dfB = _df[i][j];
 				double bowker = _bowker[i][j];
 				double pBowker = 1.0;
 				if (dfB > 0) pBowker = gammq(dfB / 2.0, (bowker / 2.0));
+				resultsFile << "\t" << bowker << "\t" << dfB << "\t" << pBowker;
 
 				unsigned int dfS = _dim - 1;
-				double stuart = _stuart[i][j];
-				double pStuart = gammq(dfS / 2.0, (stuart / 2.0));
-
 				unsigned int dfA = dfB - dfS;
-				double ababneh = bowker - stuart;
-				double pAbabneh= gammq(dfA / 2.0, (ababneh / 2.0));
+				double stuart = _stuart[i][j];
+				if (stuart != stuart) // NaN
+				{
+					resultsFile << "\t" << "n/a" << "\t" << dfS << "\t" << "n/a";
+					resultsFile << "\t" << "n/a" << "\t" << dfA << "\t" << "n/a";
+				} else {
+					double pStuart = gammq(dfS / 2.0, (stuart / 2.0));
+					resultsFile << "\t" << stuart << "\t" << dfS << "\t" << pStuart;
 
-				double ds = _ds[i][j];
-				double dms = _dms[i][j];
+					double ababneh = bowker - stuart;
+					double pAbabneh= gammq(dfA / 2.0, (ababneh / 2.0));
+					resultsFile << "\t" << ababneh << "\t" << dfA << "\t" << pAbabneh;
+				}
+
 
 				double aitchison = _aitchison[i][j];
-
-				resultsFile << _alignment[k].getName() << "\t" << _alignment[l].getName() << scientific;
-				resultsFile << "\t" << bowker << "\t" << dfB << "\t" << pBowker;
-				resultsFile << "\t" << stuart << "\t" << dfS << "\t" << pStuart;
-				resultsFile << "\t" << ababneh << "\t" << dfA << "\t" << pAbabneh;
+				double ds = _ds[i][j];
+				double dms = _dms[i][j];
 				resultsFile << "\t" << aitchison << "\t" << ds << "\t" << dms;
+
+
 				resultsFile << "\t" << windowStart << "\t" << windowStart + windowSize - 1 << endl;
 
 				if (pBowker < minP) minP = pBowker;
@@ -442,24 +456,31 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 					double bowker = _bowker[i][j];
 					double pBowker = 1.0;
 					if (dfB > 0) pBowker = gammq(dfB / 2.0, (bowker / 2.0));
+					bowkerFile << "\t" << scientific << pBowker;
 
 					unsigned int dfS = _dim - 1;
-					double stuart = _stuart[i][j];
-					double pStuart = gammq(dfS / 2.0, (stuart / 2.0));
-
 					unsigned int dfA = dfB - dfS;
-					double ababneh = bowker - stuart;
-					double pAbabneh = gammq(dfA / 2.0, (ababneh / 2.0));
+					double stuart = _stuart[i][j];
+					if (stuart != stuart) // NaN
+					{
+						stuartFile << "\t" << "n/a";
+						ababnehFile << "\t" << "n/a";
+					} else {
+						double pStuart = gammq(dfS / 2.0, (stuart / 2.0));
+						stuartFile << "\t" << scientific << pStuart;
+
+						double ababneh = bowker - stuart;
+						double pAbabneh = gammq(dfA / 2.0, (ababneh / 2.0));
+						ababnehFile << "\t" << scientific << pAbabneh;
+					}
 
 					double aitchison = _aitchison[i][j];
-					double ds = _ds[i][j];
-					double dms = _dms[i][j];
-
-					bowkerFile << "\t" << scientific << pBowker;
-					stuartFile << "\t" << scientific << pStuart;
-					ababnehFile << "\t" << scientific << pAbabneh;
 					aitchisonFile << "\t" << scientific << aitchison;
+
+					double ds = _ds[i][j];
 					delta_sFile << "\t" << scientific << ds;
+
+					double dms = _dms[i][j];
 					delta_msFile << "\t" << scientific << dms;
 					j++;
 				}
