@@ -346,8 +346,8 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 	cout << "  Stuart\'s test:               " << stuartFileName << endl;
 	cout << "  Ababneh\'s test:              " << ababnehFileName << endl;
 	cout << "  Aitchison\'s distance matrix: " << aitchisonFileName << endl;
-	cout << "  delta_s distance matrix:      " << delta_sFileName << endl;
-	cout << "  delta_ms distance matrix:     " << delta_msFileName << endl;
+	cout << "  delta_s distance matrix:     " << delta_sFileName << endl;
+	cout << "  delta_ms distance matrix:    " << delta_msFileName << endl;
 
 	unsigned int len = _alignment.size();
 	if (windowSize <= 0) windowSize = _cols;
