@@ -53,19 +53,19 @@ Alignment::Alignment(Options *options)
 		else if (counts[2] == counts[1]) dataTypeGuess = _AA_DATA;
 		_dataType = dataTypeGuess;
 
-		if (_dataType == _DNA_DATA)
-			_dim = 4;
-		else if (_dataType == _AA_DATA)
-			_dim = 20;
-		else
-			_dim = 36;
-
 		cout << "It contains " << getNumOfRows() << " sequences " << "which appear to be " << dataTypeDesc[_dataType] << "." << endl;
 	} else
 	{
 		_dataType = options->dataType;
 		cout << "It contains " << getNumOfRows() << " sequences which have been defined to be " << dataTypeDesc[_dataType] << "." << endl;
 	}
+
+	if (_dataType == _DNA_DATA)
+		_dim = 4;
+	else if (_dataType == _AA_DATA)
+		_dim = 20;
+	else
+		_dim = 36;
 
 	for (unsigned int i = 0; i < _alignment.size(); i++)
 	{
