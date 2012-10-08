@@ -77,7 +77,6 @@ vector<Sequence> AlignmentReader::getSequences(int from, int to)
 				if (_lastLine[0] != '>') seq += _lastLine;
 			}
 			seq = adjustString(seq, false);
-			name = adjustString(name.substr(1), false);
 			if (name.length() > 1 && seq.length())
 			{
 				if (_cols & seq.length() != (unsigned int) _cols)
@@ -90,9 +89,9 @@ vector<Sequence> AlignmentReader::getSequences(int from, int to)
 					_cols = (int) seq.length();
 
 				if (to == -1)
-					sequences.push_back(Sequence(name, seq.substr(from - 1)));
+					sequences.push_back(Sequence(name.substr(1), seq.substr(from - 1)));
 				else
-					sequences.push_back(Sequence(name, seq.substr(from - 1, to - from + 1)));
+					sequences.push_back(Sequence(name.substr(1), seq.substr(from - 1, to - from + 1)));
 				_rows++;
 			}
 		}

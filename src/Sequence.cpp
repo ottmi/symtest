@@ -3,7 +3,12 @@
 
 Sequence::Sequence(string name, string seq)
 {
-	_name = name;
+	int n = name.find_first_of(" \t");
+	if (n == -1)
+	    _name = name;
+	else
+	    _name = name.substr(0, n);
+	_longName = name;
 	_sequence = seq;
 }
 

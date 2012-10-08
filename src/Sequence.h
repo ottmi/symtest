@@ -13,6 +13,7 @@ public:
 	virtual ~Sequence();
 	void translateToNum(int dataType, Options *options);
 	string& getName() { return _name; };
+	string& getLongName() { return _longName; };
 	string& getSequence() { return _sequence; };
 	string getColumns(vector<int> cols);
 	unsigned int getNumerical(int pos);
@@ -21,6 +22,7 @@ public:
 private:
 	int _dataType;
 	string _name;
+	string _longName;
 	string _sequence;
 	vector<unsigned int> _numericSeq;
 	int _groupSize;
