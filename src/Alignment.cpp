@@ -288,8 +288,8 @@ void Alignment::writeSummary(string prefix, int windowSize, int windowStep)
 				double stuart = _stuart[i][j];
 				if (stuart != stuart) // NaN
 				{
-					resultsFile << "\t" << "n/a" << "\t" << dfS << "\t" << "n/a";
-					resultsFile << "\t" << "n/a" << "\t" << dfA << "\t" << "n/a";
+					resultsFile << "\t" << "n/a" << "\t" << "n/a" << "\t" << "n/a";
+					resultsFile << "\t" << "n/a" << "\t" << "n/a" << "\t" << "n/a";
 				} else {
 					double pStuart = gammq(dfS / 2.0, (stuart / 2.0));
 					resultsFile << "\t" << stuart << "\t" << dfS << "\t" << pStuart;
