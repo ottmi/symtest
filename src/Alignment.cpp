@@ -210,7 +210,8 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep)
 						}
 					}
 				} catch (string& s) {
-					cerr << "Error while inverting matrix for Stuart's test (" << k << "x" << l << "): " << s << endl;
+				        if (verbose)
+				            cerr << "Error while inverting matrix for Stuart's test (" << k << "x" << l << "): " << s << endl;
 					stuart = numeric_limits<double>::quiet_NaN();
 				}
 
@@ -291,11 +292,13 @@ void Alignment::writeSummary(string prefix, int windowSize, int windowStep)
 					resultsFile << "\t" << "n/a" << "\t" << "n/a" << "\t" << "n/a";
 					resultsFile << "\t" << "n/a" << "\t" << "n/a" << "\t" << "n/a";
 				} else {
-					double pStuart = gammq(dfS / 2.0, (stuart / 2.0));
+					double pStuart = 1.0;
+					if (dfS > 0) pStuart = gammq(dfS / 2.0, (stuart / 2.0));
 					resultsFile << "\t" << stuart << "\t" << dfS << "\t" << pStuart;
 
 					double ababneh = bowker - stuart;
-					double pAbabneh= gammq(dfA / 2.0, (ababneh / 2.0));
+					double pAbabneh = 1.0;
+					if (dfA > 0) pAbabneh = gammq(dfA / 2.0, (ababneh / 2.0));
 					resultsFile << "\t" << ababneh << "\t" << dfA << "\t" << pAbabneh;
 				}
 
@@ -466,11 +469,13 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 						stuartFile << "\t" << "n/a";
 						ababnehFile << "\t" << "n/a";
 					} else {
-						double pStuart = gammq(dfS / 2.0, (stuart / 2.0));
+						double pStuart = 1.0;
+						if (dfS > 0) pStuart = gammq(dfS / 2.0, (stuart / 2.0));
 						stuartFile << "\t" << scientific << pStuart;
 
 						double ababneh = bowker - stuart;
-						double pAbabneh = gammq(dfA / 2.0, (ababneh / 2.0));
+						double pAbabneh = 1.0;
+						if (dfA > 0) pAbabneh = gammq(dfA / 2.0, (ababneh / 2.0));
 						ababnehFile << "\t" << scientific << pAbabneh;
 					}
 
