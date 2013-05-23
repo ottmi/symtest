@@ -1,8 +1,9 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <algorithm>
 #include <climits>
 #include <cfloat>
-#include <sstream>
 #include <cstdio>
 #include <unistd.h>
 #include "globals.h"
@@ -41,8 +42,9 @@ int parseArguments(int argc, char** argv, Options *options)
 
 	int minGroup = 0;
 	int maxGroup = 0;
+	string listOfSeq;
 
-	while ((c = getopt(argc, argv, "t:p:g:c:xw:n:v::h")) != -1)
+	while ((c = getopt(argc, argv, "t:s:p:g:c:xw:n:v::h")) != -1)
 	{
 		switch (c)
 		{
@@ -70,6 +72,9 @@ int parseArguments(int argc, char** argv, Options *options)
 				}
 				break;
 			}
+			case 's':
+				listOfSeq = optarg;
+				break;
 			case 'p':
 				options->prefix = optarg;
 				break;
@@ -170,6 +175,47 @@ int parseArguments(int argc, char** argv, Options *options)
 		options->prefix = options->inputAlignment.substr(m, n);
 	}
 
+	if (listOfSeq.length() > 0) {
+		if (listOfSeq.find_first_of(',') == string::npos) {
+			ifstream _fileReader;
+			_fileReader.open(listOfSeq.c_str());
+			if (!_fileReader.is_open()) {
+				cerr << "Parameter -s did not contain a list of sequences but also does not point to a file." << endl;
+				cerr << "Please specify either a comma-separated list of sequences or a text file with the sequence names." << endl;
+				return 5;
+			}
+			string seq;
+			while (!_fileReader.eof()) {
+				safeGetline(_fileReader, seq);
+				if (seq.length()) {
+					options->listOfSequences.insert(seq);
+				}
+			}
+			_fileReader.close();
+		} else {
+			size_t from, to;
+			from = 0;
+			while ((to = listOfSeq.find_first_of(',', from)) != string::npos) {
+				string seq = listOfSeq.substr(from, to-from);
+				if (seq.length()) {
+					options->listOfSequences.insert(seq);
+				}
+				from = to+1;
+			}
+			string seq = listOfSeq.substr(from);
+			if (seq.length()) {
+				options->listOfSequences.insert(seq);
+			}
+		}
+
+		cout << "Sequences to be considered:" << endl;
+		set<string>::iterator it;
+		for (it = options->listOfSequences.begin(); it != options->listOfSequences.end(); it++) {
+			cout << *it << endl;
+		}
+		cout << endl;
+	}
+
 	return 0;
 }
 
@@ -182,6 +228,7 @@ void printSyntax()
 
 	cout << "Options:" << endl;
 	cout << "  -t<a|d|n>      Data type a=AA, d=DNA, n=Alphanumeric [default: auto-detect]" << endl;
+	cout << "  -s<LIST|FILE>  Only consider sequences in comma-separated LIST or FILE" << endl;
 	cout << "  -p<STRING>     Prefix for output files [default: name of alignment w/o .ext]" << endl;
 	cout << endl;
 	cout << "  -c<from-to>    Only consider alignment columns from-to, enumeration starts with 1" << endl;

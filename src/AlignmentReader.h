@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <set>
 #include "Sequence.h"
 
 using namespace std;
@@ -13,7 +14,7 @@ class AlignmentReader
 public:
 	AlignmentReader(string fileName);
 	~AlignmentReader();
-	vector<Sequence> getSequences(int from, int to);
+	vector<Sequence> getSequences(int from, int to, set<string>& listOfSequences);
 	int getFormat() { return _format; };
 	unsigned int getRows() { return _rows; };
 	unsigned int getCols() { return _cols; };

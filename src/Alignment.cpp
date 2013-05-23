@@ -22,7 +22,7 @@ Alignment::Alignment()
 Alignment::Alignment(Options *options)
 {
 	AlignmentReader alignmentReader(options->inputAlignment);
-	_alignment = alignmentReader.getSequences(options->columnFrom, options->columnTo);
+	_alignment = alignmentReader.getSequences(options->columnFrom, options->columnTo, options->listOfSequences);
 	_cols = alignmentReader.getCols();
 	_cols /= options->groupLength;
 
@@ -54,11 +54,11 @@ Alignment::Alignment(Options *options)
 		else if (counts[2] == counts[1]) dataTypeGuess = _AA_DATA;
 		_dataType = dataTypeGuess;
 
-		cout << "It contains " << getNumOfRows() << " sequences " << "which appear to be " << dataTypeDesc[_dataType] << "." << endl;
+		cout << "Read " << getNumOfRows() << " sequences " << "which appear to be " << dataTypeDesc[_dataType] << "." << endl;
 	} else
 	{
 		_dataType = options->dataType;
-		cout << "It contains " << getNumOfRows() << " sequences which have been defined to be " << dataTypeDesc[_dataType] << "." << endl;
+		cout << "Read " << getNumOfRows() << " sequences which have been defined to be " << dataTypeDesc[_dataType] << "." << endl;
 	}
 
 	if (_dataType == _DNA_DATA)

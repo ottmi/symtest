@@ -1,12 +1,13 @@
 #include <sstream>
+#include <algorithm>
 #include "globals.h"
 #include "helper.h"
 #include "AlignmentReader.h"
 
-AlignmentReader::AlignmentReader(string fileName)
-{
+AlignmentReader::AlignmentReader(string fileName) {
 	_fileReader.open(fileName.c_str());
-	if (!_fileReader.is_open()) throw("Error, cannot open file " + fileName);
+	if (!_fileReader.is_open())
+		throw("Error, cannot open file " + fileName);
 
 	cout << "Reading alignment file: " << fileName << endl;
 
@@ -15,31 +16,24 @@ AlignmentReader::AlignmentReader(string fileName)
 
 	safeGetline(_fileReader, _lastLine);
 
-	if (_lastLine[0] == '>')
-	{
+	if (_lastLine[0] == '>') {
 		cout << "The file appears to be in Fasta format." << endl;
 		_format = _FASTA_FORMAT;
-	} else
-	{
+	} else {
 		stringstream ss(_lastLine);
 		ss >> _rows >> _cols;
-		if (_rows && _cols)
-		{
+		if (_rows && _cols) {
 			cout << "The file appears to be in be in Phylip format (" << _rows << " rows, " << _cols << " columns)." << endl;
 			_format = _PHYLIP_FORMAT;
-		} else
-		{
+		} else {
 			string ext = fileName.substr(fileName.find_last_of('.') + 1);
-			if (!ext.compare("fsa") || !ext.compare("fst") || !ext.compare("fasta"))
-			{
+			if (!ext.compare("fsa") || !ext.compare("fst") || !ext.compare("fasta")) {
 				cout << "According to its extension, this file should be in Fasta format." << endl;
 				_format = _FASTA_FORMAT;
-			} else if (!ext.compare("phy") || !ext.compare("phylip"))
-			{
+			} else if (!ext.compare("phy") || !ext.compare("phylip")) {
 				cout << "According to its extension, this file should be in Phylip format." << endl;
 				_format = _PHYLIP_FORMAT;
-			} else
-			{
+			} else {
 				stringstream s;
 				s << "Unable to detect alignment format.\n" << PROGNAME << " only supports the Fasta and sequential Phylip formats.";
 				throw(s.str());
@@ -48,91 +42,116 @@ AlignmentReader::AlignmentReader(string fileName)
 	}
 }
 
-AlignmentReader::~AlignmentReader()
-{
-	if (!_fileReader.is_open()) _fileReader.close();
+AlignmentReader::~AlignmentReader() {
+	if (!_fileReader.is_open())
+		_fileReader.close();
 }
 
-vector<Sequence> AlignmentReader::getSequences(int from, int to)
-{
+vector<Sequence> AlignmentReader::getSequences(int from, int to, set<string>& listOfSequences) {
 	string whiteSpace = " \n\t";
 	vector<Sequence> sequences;
+	unsigned int origListSize = listOfSequences.size();
 
-	if (from == -1) from = 1;
+	if (from == -1)
+		from = 1;
 
-	if (_format == _FASTA_FORMAT)
-	{
+	if (_format == _FASTA_FORMAT) {
 		while ((!_fileReader.eof()) && _lastLine[0] != '>')
 			safeGetline(_fileReader, _lastLine);
 
-		while (!_fileReader.eof())
-		{
+		while (!_fileReader.eof()) {
 			string name;
 			string seq;
 			name = _lastLine;
 			_lastLine = "";
-			while (!_fileReader.eof() && _lastLine[0] != '>')
-			{
+			while (!_fileReader.eof() && _lastLine[0] != '>') {
 				safeGetline(_fileReader, _lastLine);
-				if (_lastLine[0] != '>') seq += _lastLine;
+				if (_lastLine[0] != '>')
+					seq += _lastLine;
 			}
-			seq = adjustString(seq, false);
-			if (name.length() > 1 && seq.length())
-			{
-				if (_cols & seq.length() != (unsigned int) _cols)
-				{
-					stringstream ss;
-					ss << "Sequence #" << sequences.size() + 1 << " (" << name << ") consists of " << seq.length() << " characters. All previous sequences consisted of "
-							<< _cols << " characters.";
-					throw(ss.str());
-				} else
-					_cols = (int) seq.length();
+			if (origListSize == 0 || listOfSequences.find(name) != listOfSequences.end()) {
+				listOfSequences.erase(name);
+				seq = adjustString(seq, false);
+				if (name.length() && seq.length()) {
+					if (_cols & seq.length() != (unsigned int) _cols) {
+						stringstream ss;
+						ss << "Sequence #" << sequences.size() + 1 << " (" << name << ") consists of " << seq.length()
+								<< " characters. All previous sequences consisted of " << _cols << " characters.";
+						throw(ss.str());
+					} else
+						_cols = (int) seq.length();
 
-				if (to == -1)
-					sequences.push_back(Sequence(name.substr(1), seq.substr(from - 1)));
-				else
-					sequences.push_back(Sequence(name.substr(1), seq.substr(from - 1, to - from + 1)));
-				_rows++;
+					if (to == -1)
+						sequences.push_back(Sequence(name.substr(1), seq.substr(from - 1)));
+					else
+						sequences.push_back(Sequence(name.substr(1), seq.substr(from - 1, to - from + 1)));
+					_rows++;
+				}
+			} else {
+				if (verbose) {
+					cout << "Skipping Sequence #" << sequences.size() + 1 << " (" << name << ")" << endl;
+				}
 			}
 		}
-	} else if (_format == _PHYLIP_FORMAT)
-	{
-		while (!_fileReader.eof())
-		{
+	} else if (_format == _PHYLIP_FORMAT) {
+		while (!_fileReader.eof()) {
 			safeGetline(_fileReader, _lastLine);
-			if (_lastLine.length())
-			{
+			if (_lastLine.length()) {
 				int n = _lastLine.find_first_of(whiteSpace);
 				string name, seq;
 				if (n == -1) // there's no whitespace, so the sequence starts at pos 11
-				{
+						{
 					name = _lastLine.substr(0, 10);
 					seq = _lastLine.substr(10);
-				} else
-				{
+				} else {
 					name = _lastLine.substr(0, n);
 					n = _lastLine.find_first_not_of(whiteSpace, n);
 					seq = _lastLine.substr(n);
 				}
 
-				seq = adjustString(seq, false);
-				if (name.length() && seq.length())
-				{
-					if (seq.length() != (unsigned int) _cols)
-					{
-						stringstream ss;
-						ss << "Sequence #" << sequences.size() + 1 << " (" << name << ") consists of " << seq.length() << " characters when it should be " << _cols << ".";
-						throw(ss.str());
-					}
+				if (origListSize == 0  || listOfSequences.find(name) != listOfSequences.end()) {
+					listOfSequences.erase(name);
+					seq = adjustString(seq, false);
+					if (name.length() && seq.length()) {
+						if (seq.length() != (unsigned int) _cols) {
+							stringstream ss;
+							ss << "Sequence #" << sequences.size() + 1 << " (" << name << ") consists of " << seq.length()
+									<< " characters when it should be " << _cols << ".";
+							throw(ss.str());
+						}
 
-					if (to == -1)
-						sequences.push_back(Sequence(name, seq.substr(from - 1)));
-					else
-						sequences.push_back(Sequence(name, seq.substr(from - 1, to - from + 1)));
+						if (to == -1)
+							sequences.push_back(Sequence(name, seq.substr(from - 1)));
+						else
+							sequences.push_back(Sequence(name, seq.substr(from - 1, to - from + 1)));
+					}
+				} else {
+					if (verbose) {
+						cout << "Skipping Sequence #" << sequences.size() + 1 << " (" << name << ")" << endl;
+					}
 				}
 			}
 		}
-		if ((int) sequences.size() < _rows) cerr << "The alignment contains only " << sequences.size() << " rows, but it should be " << _rows << "." << endl;
+		if (origListSize == 0 && (int) sequences.size() < _rows)
+			cerr << "The alignment contains only " << sequences.size() << " rows, but it should be " << _rows << "." << endl;
+	}
+
+	if (listOfSequences.size()) {
+		cerr << endl;
+		cerr << "These sequences could not be found in the alignment:" << endl;
+		set<string>::iterator it;
+		for (it = listOfSequences.begin(); it != listOfSequences.end(); it++) {
+			cout << *it << endl;
+		}
+		cerr << endl;
+	}
+
+	if (sequences.size() == 0) {
+		if (listOfSequences.size() == origListSize) {
+			throw(string("Not a single sequence from the provided list could be found in the alignment."));
+		} else {
+			throw(string("The alignment appears to be empty."));
+		}
 	}
 
 	_cols = sequences[0].getLength();

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 using namespace std;
 
 #define PROGNAME "symtest"
@@ -29,6 +30,7 @@ extern int verbose;
 typedef struct opt_struct
 {
     string inputAlignment;
+    set<string> listOfSequences;
     int dataType;
     string prefix;
     vector<int> grouping;
