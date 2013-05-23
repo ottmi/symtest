@@ -221,26 +221,33 @@ int parseArguments(int argc, char** argv, Options *options)
 
 void printSyntax()
 {
+/*
+                       1         2         3         4         5         6         7         8
+             012345678901234567890123456789012345678901234567890123456789012345678901234567890
+*/
 	cout << "Usage:" << endl;
 	cout << "  symtest [options] <alignment>" << endl;
 	cout << "  symtest -h" << endl;
 	cout << endl;
 
 	cout << "Options:" << endl;
-	cout << "  -t<a|d|n>      Data type a=AA, d=DNA, n=Alphanumeric [default: auto-detect]" << endl;
-	cout << "  -s<LIST|FILE>  Only consider sequences in comma-separated LIST or FILE" << endl;
-	cout << "  -p<STRING>     Prefix for output files [default: name of alignment w/o .ext]" << endl;
-	cout << endl;
-	cout << "  -c<from-to>    Only consider alignment columns from-to, enumeration starts with 1" << endl;
-	cout << "  -g<LIST>       Grouping of sites, e.g. 1,2,-3 for duplets, 1,2,3 for codons" << endl;
-	cout << endl;
-	cout << "  -x             Write extended output files with test results" << endl;
-	cout << "  -w<NUM>,[NUM]  Window size and step width for symmetry test" << endl;
-	cout << endl;
+    cout << "  -t<a|d|n>      Data types: a = AA; d = DNA; n = Alphanumeric" << endl;
+    cout << "                 [default: auto-detect]" << endl;
+	cout << "  -s<FILE|LIST>  Only consider sequences in FILE or comma-separated LIST" << endl;
+    cout << "  -p<STRING>     Prefix for output files [default: name of alignment w/o .ext]" << endl;
+    cout << endl;
+    cout << "  -c<n1-n2>      Limited window analysis: from column n1 to column n2," << endl;
+    cout << "                 enumeration starts with 1" << endl;
+    cout << "  -w<n3,n4>      Sliding window analysis: window size = n3; step size = n4" << endl;
+    cout << "  -g<LIST>       Grouping of codon sites: comma-separated, pos/neg to use/skip" << endl;
+    cout << "                 e.g., 1,2,-3 for duplets comprising 1st and 2nd position" << endl;
+    cout << "                       1,2,3  for triplets comprising 1st, 2nd, and 3rd position" << endl;
+    cout << endl;
+    cout << "  -x             Write extended output files with test results" << endl;
+    cout << "  -v<n5>         Be increasingly verbose [n5 = 0|1|2]" << endl;
 #ifdef _OPENMP
-	cout << "  -n<NUM>        Number of threads [default: " << omp_get_max_threads() << "]" << endl;
+    cout << "  -n<n6>         Number of threads [default: " << omp_get_max_threads() << "]" << endl;
 #endif
-	cout << "  -v[NUM]        Be increasingly verbose" << endl;
 	cout << "  -h             This help page" << endl;
 	cout << endl;
 }
