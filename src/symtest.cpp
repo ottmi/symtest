@@ -9,9 +9,6 @@
 #include "globals.h"
 #include "Alignment.h"
 #include "helper.h"
-#ifdef _MPFR
-#include "mpfr.h"
-#endif
 
 using namespace std;
 
@@ -180,8 +177,9 @@ int parseArguments(int argc, char** argv, Options *options)
 			ifstream _fileReader;
 			_fileReader.open(listOfSeq.c_str());
 			if (!_fileReader.is_open()) {
-				cerr << "Parameter -s did not contain a list of sequences but also does not point to a file." << endl;
-				cerr << "Please specify either a comma-separated list of sequences or a text file with the sequence names." << endl;
+				cerr << "Parameter -s does neither contain a list of sequences nor point to a file." << endl;
+				cerr << "Please specify either a comma-separated list of sequence names or a text file" << endl;
+				cerr << "containing one sequence name per line." << endl;
 				return 5;
 			}
 			string seq;
