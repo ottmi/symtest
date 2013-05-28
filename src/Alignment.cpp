@@ -249,7 +249,7 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep)
 
 void Alignment::writeSummary(string prefix, int windowSize, int windowStep)
 {
-	string resultsFileName = prefix + ".symmetry.csv";
+	string resultsFileName = prefix + ".summary.csv";
 	ofstream resultsFile;
 	resultsFile.open(resultsFileName.c_str(), ifstream::trunc);
 	if (!resultsFile.is_open()) throw("Error, cannot open file " + resultsFileName);
@@ -261,9 +261,9 @@ void Alignment::writeSummary(string prefix, int windowSize, int windowStep)
 	if (windowStep <= 0) windowStep = windowSize;
 
 	resultsFile << "Seq1\tSeq2";
-	resultsFile	<< "\tBowker_X^2\tdf_B\tp_B";
-	resultsFile << "\tStuart_X^2\tdf_S\tp_S";
-	resultsFile << "\tAbabneh_X^2\tdf_A\tp_A";
+	resultsFile	<< "\tBowker (B)\tdf_B\tp_B";
+	resultsFile << "\tStuart (S)\tdf_S\tp_S";
+	resultsFile << "\tAbabneh (A)\tdf_A\tp_A";
 	resultsFile << "\tAitchison\tDelta_s\tDelta_ms";
 	resultsFile << "\tStart\tEnd" << endl;
 
@@ -351,11 +351,11 @@ void Alignment::writeSummary(string prefix, int windowSize, int windowStep)
 void Alignment::writeExtendedResults(string prefix, int windowSize, int windowStep)
 {
 	string bowkerFileName = prefix + ".bowker.csv";
-	string delta_sFileName = prefix + ".delta_s.csv";
-	string delta_msFileName = prefix + ".delta_ms.csv";
 	string stuartFileName = prefix + ".stuart.csv";
 	string ababnehFileName = prefix + ".ababneh.csv";
-	string aitchisonFileName = prefix + ".aitchison.csv";
+	string delta_sFileName = prefix + ".delta_s.dis";
+	string delta_msFileName = prefix + ".delta_ms.dis";
+	string aitchisonFileName = prefix + ".aitchison.dis";
 
 	cout << endl;
 	cout << "Writing extended results to:" << endl;

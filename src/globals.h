@@ -7,7 +7,7 @@
 using namespace std;
 
 #define PROGNAME "symtest"
-#define VERSION "2.0.14"
+#define VERSION "2.0.15"
 #define PROGDATE "2013-05-28"
 
 #define _DNA_DATA	0
