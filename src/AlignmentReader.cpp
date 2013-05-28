@@ -62,7 +62,7 @@ vector<Sequence> AlignmentReader::getSequences(int from, int to, set<string>& li
 		while (!_fileReader.eof()) {
 			string name;
 			string seq;
-			name = _lastLine;
+			name = _lastLine.substr(1);
 			_lastLine = "";
 			while (!_fileReader.eof() && _lastLine[0] != '>') {
 				safeGetline(_fileReader, _lastLine);
@@ -82,9 +82,9 @@ vector<Sequence> AlignmentReader::getSequences(int from, int to, set<string>& li
 						_cols = (int) seq.length();
 
 					if (to == -1)
-						sequences.push_back(Sequence(name.substr(1), seq.substr(from - 1)));
+						sequences.push_back(Sequence(name, seq.substr(from - 1)));
 					else
-						sequences.push_back(Sequence(name.substr(1), seq.substr(from - 1, to - from + 1)));
+						sequences.push_back(Sequence(name, seq.substr(from - 1, to - from + 1)));
 					_rows++;
 				}
 			} else {
