@@ -14,24 +14,20 @@
 #include "Matrix.h"
 #include "helper.h"
 
-Alignment::Alignment()
-{
+Alignment::Alignment() {
 	_cols = 0;
 }
 
-Alignment::Alignment(Options *options)
-{
+Alignment::Alignment(Options *options) {
 	AlignmentReader alignmentReader(options->inputAlignment);
 	_alignment = alignmentReader.getSequences(options->columnFrom, options->columnTo, options->listOfSequences);
 	_cols = alignmentReader.getCols();
 	_cols /= options->groupLength;
 
 	string dataTypeDesc[] = { "DNA", "AA", "alphanumeric" };
-	if (options->dataType < 0)
-	{
+	if (options->dataType < 0) {
 		map<char, unsigned long> baseOccurences;
-		for (unsigned int i = 0; i < _alignment.size(); i++)
-		{
+		for (unsigned int i = 0; i < _alignment.size(); i++) {
 			string s = _alignment[i].getSequence();
 			for (unsigned int j = 0; j < s.length(); j++)
 				baseOccurences[s[j]]++;
@@ -39,24 +35,24 @@ Alignment::Alignment(Options *options)
 
 		string maps[] = { _DNA_MAP, _AA_MAP, _ALPHANUM_MAP };
 		unsigned long counts[3];
-		for (unsigned int i = 0; i < 3; i++)
-		{
+		for (unsigned int i = 0; i < 3; i++) {
 			counts[i] = 0;
 			string map = maps[i];
 			for (unsigned j = 0; j < map.length(); j++)
 				counts[i] += baseOccurences[map[j]];
 		}
 
-		if (verbose) cout << counts[0] << " DNA characters, " << counts[1] << " AA characters, " << counts[2] << " Alphanum characters." << endl;
+		if (verbose)
+			cout << counts[0] << " DNA characters, " << counts[1] << " AA characters, " << counts[2] << " Alphanum characters." << endl;
 		int dataTypeGuess = _ALPHANUM_DATA;
 		if (counts[2] == counts[0])
 			dataTypeGuess = _DNA_DATA;
-		else if (counts[2] == counts[1]) dataTypeGuess = _AA_DATA;
+		else if (counts[2] == counts[1])
+			dataTypeGuess = _AA_DATA;
 		_dataType = dataTypeGuess;
 
 		cout << "Read " << getNumOfRows() << " sequences " << "which appear to be " << dataTypeDesc[_dataType] << "." << endl;
-	} else
-	{
+	} else {
 		_dataType = options->dataType;
 		cout << "Read " << getNumOfRows() << " sequences which have been defined to be " << dataTypeDesc[_dataType] << "." << endl;
 	}
@@ -68,11 +64,9 @@ Alignment::Alignment(Options *options)
 	else
 		_dim = 36;
 
-	for (unsigned int i = 0; i < _alignment.size(); i++)
-	{
+	for (unsigned int i = 0; i < _alignment.size(); i++) {
 		_alignment[i].translateToNum(_dataType, options);
-		if (verbose >= 2)
-		{
+		if (verbose >= 2) {
 			cout << i << ": ";
 			for (unsigned int j = 0; j < _alignment[i].getLength() / options->groupLength; j++)
 				cout << mapNumToChar(_alignment[i].getNumerical(j), _dataType, options->grouping.size()) << " ";
@@ -81,24 +75,24 @@ Alignment::Alignment(Options *options)
 	}
 }
 
-Alignment::~Alignment()
-{
+Alignment::~Alignment() {
 }
 
-void Alignment::testSymmetry(string prefix, int windowSize, int windowStep)
-{
+void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 	cout << endl << "Performing tests of pairwise symmetry" << endl;
 
 	unsigned int len = _alignment.size();
-	if (windowSize <= 0) windowSize = _cols;
-	if (windowStep <= 0) windowStep = windowSize;
+	if (windowSize <= 0)
+		windowSize = _cols;
+	if (windowStep <= 0)
+		windowStep = windowSize;
 
-	if (windowSize < (int) _cols) cout << "  WindowSize=" << windowSize << " StepWidth=" << windowStep << " _cols=" << _cols << endl;
+	if (windowSize < (int) _cols)
+		cout << "  WindowSize=" << windowSize << " StepWidth=" << windowStep << " _cols=" << _cols << endl;
 
 	cout.precision(6);
-	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep)
-	{
-		vector< vector<double> > baseFrequencies;
+	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep) {
+		vector<vector<double> > baseFrequencies;
 		vector<unsigned int> dfList;
 		vector<double> bowkerList;
 		vector<double> dsList;
@@ -107,52 +101,50 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep)
 		vector<double> aitchisonList;
 
 		for (unsigned int k = 0; k < len; k++) // 1st sequence
-		{
+				{
 			Sequence s1 = _alignment[k];
 			vector<unsigned long> baseOccurences(_dim, 0);
-			for (unsigned int m = windowStart; m < windowStart + windowSize; m++)
-			{
-			    unsigned int c = s1.getNumerical(m);
-			    if (s1.charIsUnambiguous(c))
-				baseOccurences[c]++;
+			for (unsigned int m = windowStart; m < windowStart + windowSize; m++) {
+				unsigned int c = s1.getNumerical(m);
+				if (s1.charIsUnambiguous(c))
+					baseOccurences[c]++;
 			}
 
-			if (verbose) cout << "baseFreq[" << k << "]:";
+			if (verbose)
+				cout << "baseFreq[" << k << "]:";
 			vector<double> baseFreq(_dim);
-			for (unsigned int c = 0; c < _dim; c++)
-			{
-			    baseFreq[c] = ((double) baseOccurences[c] + (1.0 / _dim)) / (windowSize + 1);
-			    if (verbose) cout << baseFreq[c] << " ";
+			for (unsigned int c = 0; c < _dim; c++) {
+				baseFreq[c] = ((double) baseOccurences[c] + (1.0 / _dim)) / (windowSize + 1);
+				if (verbose)
+					cout << baseFreq[c] << " ";
 			}
 			baseFrequencies.push_back(baseFreq);
-			if (verbose) cout << endl;
+			if (verbose)
+				cout << endl;
 
 			for (unsigned int l = k + 1; l < len; l++) // 2nd sequence
-			{
+					{
 				Sequence s2 = _alignment[l];
 				unsigned int sum = 0;
-				map<pair<unsigned int, unsigned int> , unsigned int> nmap;
-				map<pair<unsigned int, unsigned int> , unsigned int>::iterator it;
+				map<pair<unsigned int, unsigned int>, unsigned int> nmap;
+				map<pair<unsigned int, unsigned int>, unsigned int>::iterator it;
 				unsigned long id;
-				for (unsigned int m = windowStart; m < windowStart + windowSize; m++)
-				{
+				for (unsigned int m = windowStart; m < windowStart + windowSize; m++) {
 					unsigned int c1 = s1.getNumerical(m);
 					unsigned int c2 = s2.getNumerical(m);
-					if (s1.charIsUnambiguous(c1) && s2.charIsUnambiguous(c2))
-					{
+					if (s1.charIsUnambiguous(c1) && s2.charIsUnambiguous(c2)) {
 						pair<unsigned int, unsigned int> p(c1, c2);
 						if ((it = nmap.find(p)) != nmap.end())
 							it->second = it->second + 1;
 						else
-							nmap.insert(pair<pair<unsigned int, unsigned int> , unsigned int>(p, 1));
+							nmap.insert(pair<pair<unsigned int, unsigned int>, unsigned int>(p, 1));
 						sum++;
 					}
 				}
 
 				Matrix n(_dim);
 				for (int i = 0; i < _dim; i++)
-					for (int j = 0; j < _dim; j++)
-					{
+					for (int j = 0; j < _dim; j++) {
 						pair<unsigned int, unsigned int> p(i, j);
 						if ((it = nmap.find(p)) != nmap.end())
 							n(i, j) = it->second;
@@ -163,12 +155,9 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep)
 				unsigned int df = 0;
 				double bowker = .0;
 				double deltaS = 0.0;
-				for (int i = 0; i < _dim; i++)
-				{
-					for (int j = i + 1; j < _dim; j++)
-					{
-						if (n(i, j) + n(j, i) > 0)
-						{
+				for (int i = 0; i < _dim; i++) {
+					for (int j = i + 1; j < _dim; j++) {
+						if (n(i, j) + n(j, i) > 0) {
 							df++;
 							bowker += (double) ((n(i, j) - n(j, i)) * (n(i, j) - n(j, i))) / (n(i, j) + n(j, i));
 						}
@@ -182,8 +171,7 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep)
 				dsList.push_back(sqrt(deltaS));
 
 				double deltaMs = 0.0;
-				for (int i = 0; i < _dim; i++)
-				{
+				for (int i = 0; i < _dim; i++) {
 					double rowSum = n.getRowSum(i);
 					double colSum = n.getColSum(i);
 					deltaMs += ((rowSum - colSum) / sum) * ((rowSum - colSum) / sum);
@@ -200,18 +188,16 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep)
 				double stuart = 0;
 				try {
 					V.inverse();
-					for (unsigned int i = 0; i < _dim - 1; i++)
-					{
+					for (unsigned int i = 0; i < _dim - 1; i++) {
 						double d_i = n.getRowSum(i) - n.getColSum(i);
-						for (unsigned int j = 0; j < _dim - 1; j++)
-						{
+						for (unsigned int j = 0; j < _dim - 1; j++) {
 							double d_j = n.getRowSum(j) - n.getColSum(j);
 							stuart += V(i, j) * d_i * d_j;
 						}
 					}
 				} catch (string& s) {
-				        if (verbose)
-				            cerr << "Error while inverting matrix for Stuart's test (" << k << "x" << l << "): " << s << endl;
+					if (verbose)
+						cerr << "Error while inverting matrix for Stuart's test (" << k << "x" << l << "): " << s << endl;
 					stuart = numeric_limits<double>::quiet_NaN();
 				}
 
@@ -220,23 +206,21 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep)
 		}
 
 		for (unsigned int k = 0; k < len; k++) // 1st sequence
-		    for (unsigned int l = k + 1; l < len; l++) // 2nd sequence
-		    {
-			double aitchison = .0;
-			for (unsigned int i = 0; i < _dim; i++)
-			{
-			    double x_i = baseFrequencies[k][i];
-			    double y_i = baseFrequencies[l][i];
-			    for (unsigned int j = 0; j < _dim; j++)
-			    {
-				double x_j = baseFrequencies[k][j];
-				double y_j = baseFrequencies[l][j];
-				double logDiff = log(x_i / x_j) - log(y_i / y_j);
-				aitchison+= (logDiff * logDiff) / (2 * _dim);
-			    }
+			for (unsigned int l = k + 1; l < len; l++) // 2nd sequence
+					{
+				double aitchison = .0;
+				for (unsigned int i = 0; i < _dim; i++) {
+					double x_i = baseFrequencies[k][i];
+					double y_i = baseFrequencies[l][i];
+					for (unsigned int j = 0; j < _dim; j++) {
+						double x_j = baseFrequencies[k][j];
+						double y_j = baseFrequencies[l][j];
+						double logDiff = log(x_i / x_j) - log(y_i / y_j);
+						aitchison += (logDiff * logDiff) / (2 * _dim);
+					}
+				}
+				aitchisonList.push_back(aitchison);
 			}
-			aitchisonList.push_back(aitchison);
-		    }
 
 		_df.push_back(dfList);
 		_bowker.push_back(bowkerList);
@@ -247,97 +231,119 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep)
 	}
 }
 
-void Alignment::writeSummary(string prefix, int windowSize, int windowStep)
-{
+void Alignment::writeSummary(string prefix, int windowSize, int windowStep) {
 	string resultsFileName = prefix + ".summary.csv";
 	ofstream resultsFile;
 	resultsFile.open(resultsFileName.c_str(), ifstream::trunc);
-	if (!resultsFile.is_open()) throw("Error, cannot open file " + resultsFileName);
+	if (!resultsFile.is_open())
+		throw("Error, cannot open file " + resultsFileName);
 
 	cout << "Writing summary to: " << resultsFileName << endl;
 
 	unsigned int len = _alignment.size();
-	if (windowSize <= 0) windowSize = _cols;
-	if (windowStep <= 0) windowStep = windowSize;
+	if (windowSize <= 0)
+		windowSize = _cols;
+	if (windowStep <= 0)
+		windowStep = windowSize;
 
 	resultsFile << "Seq1\tSeq2";
-	resultsFile	<< "\tBowker (B)\tdf_B\tp_B";
+	resultsFile << "\tBowker (B)\tdf_B\tp_B";
 	resultsFile << "\tStuart (S)\tdf_S\tp_S";
 	resultsFile << "\tAbabneh (A)\tdf_A\tp_A";
 	resultsFile << "\tAitchison\tDelta_s\tDelta_ms";
 	resultsFile << "\tStart\tEnd" << endl;
 
 	unsigned int i = 0;
-	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep)
-	{
+	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep) {
 		vector<unsigned int> count(10, 0);
 		double minP = 1.0;
 		unsigned int j = 0;
 		for (unsigned int k = 0; k < len; k++)
-			for (unsigned int l = k + 1; l < len; l++)
-			{
+			for (unsigned int l = k + 1; l < len; l++) {
 				resultsFile << _alignment[k].getName() << "\t" << _alignment[l].getName() << scientific;
 
 				unsigned int dfB = _df[i][j];
 				double bowker = _bowker[i][j];
 				double pBowker = 1.0;
-				if (dfB > 0) pBowker = gammq(dfB / 2.0, (bowker / 2.0));
+				if (dfB > 0)
+					pBowker = gammq(dfB / 2.0, (bowker / 2.0));
 				resultsFile << "\t" << bowker << "\t" << dfB << "\t" << pBowker;
 
 				unsigned int dfS = _dim - 1;
 				unsigned int dfA = dfB - dfS;
 				double stuart = _stuart[i][j];
 				if (stuart != stuart) // NaN
-				{
+						{
 					resultsFile << "\t" << "n/a" << "\t" << "n/a" << "\t" << "n/a";
 					resultsFile << "\t" << "n/a" << "\t" << "n/a" << "\t" << "n/a";
 				} else {
 					double pStuart = 1.0;
-					if (dfS > 0) pStuart = gammq(dfS / 2.0, (stuart / 2.0));
+					if (dfS > 0)
+						pStuart = gammq(dfS / 2.0, (stuart / 2.0));
 					resultsFile << "\t" << stuart << "\t" << dfS << "\t" << pStuart;
 
 					double ababneh = bowker - stuart;
 					double pAbabneh = 1.0;
-					if (dfA > 0) pAbabneh = gammq(dfA / 2.0, (ababneh / 2.0));
+					if (dfA > 0)
+						pAbabneh = gammq(dfA / 2.0, (ababneh / 2.0));
 					resultsFile << "\t" << ababneh << "\t" << dfA << "\t" << pAbabneh;
 				}
-
 
 				double aitchison = _aitchison[i][j];
 				double ds = _ds[i][j];
 				double dms = _dms[i][j];
 				resultsFile << "\t" << aitchison << "\t" << ds << "\t" << dms;
 
-
 				resultsFile << "\t" << windowStart << "\t" << windowStart + windowSize - 1 << endl;
 
-				if (pBowker < minP) minP = pBowker;
-				if (pBowker < 0.05) count[0]++;
-				if (pBowker < 0.01) count[1]++;
-				if (pBowker < 0.005) count[2]++;
-				if (pBowker < 0.001) count[3]++;
-				if (pBowker < 0.0005) count[4]++;
-				if (pBowker < 0.0001) count[5]++;
-				if (pBowker < 0.00005) count[6]++;
-				if (pBowker < 0.00001) count[7]++;
-				if (pBowker < 0.000005) count[8]++;
-				if (pBowker < 0.000001) count[9]++;
+				if (pBowker < minP)
+					minP = pBowker;
+				if (pBowker < 0.05)
+					count[0]++;
+				if (pBowker < 0.01)
+					count[1]++;
+				if (pBowker < 0.005)
+					count[2]++;
+				if (pBowker < 0.001)
+					count[3]++;
+				if (pBowker < 0.0005)
+					count[4]++;
+				if (pBowker < 0.0001)
+					count[5]++;
+				if (pBowker < 0.00005)
+					count[6]++;
+				if (pBowker < 0.00001)
+					count[7]++;
+				if (pBowker < 0.000005)
+					count[8]++;
+				if (pBowker < 0.000001)
+					count[9]++;
 
 				j++;
 			}
 
 		cout << endl << "Highlights from the analysis (window " << windowStart << "-" << windowStart + windowSize - 1 << "):" << endl;
 		cout.precision(2);
-		if (minP < 0.05) cout << "P-values < 0.05                 " << setw(8) << count[0] << " (" << fixed << (double) count[0] * 100 / j << "%)" << endl;
-		if (minP < 0.01) cout << "P-values < 0.01                 " << setw(8) << count[1] << " (" << fixed << (double) count[1] * 100 / j << "%)" << endl;
-		if (minP < 0.005) cout << "P-values < 0.005                " << setw(8) << count[2] << " (" << fixed << (double) count[2] * 100 / j << "%)" << endl;
-		if (minP < 0.001) cout << "P-values < 0.001                " << setw(8) << count[3] << " (" << fixed << (double) count[3] * 100 / j << "%)" << endl;
-		if (minP < 0.0005) cout << "P-values < 0.0005               " << setw(8) << count[4] << " (" << fixed << (double) count[4] * 100 / j << "%)" << endl;
-		if (minP < 0.0001) cout << "P-values < 0.0001               " << setw(8) << count[5] << " (" << fixed << (double) count[5] * 100 / j << "%)" << endl;
-		if (minP < 0.00005) cout << "P-values < 0.00005              " << setw(8) << count[6] << " (" << fixed << (double) count[6] * 100 / j << "%)" << endl;
-		if (minP < 0.00001) cout << "P-values < 0.00001              " << setw(8) << count[7] << " (" << fixed << (double) count[7] * 100 / j << "%)" << endl;
-		if (minP < 0.000005) cout << "P-values < 0.000005             " << setw(8) << count[8] << " (" << fixed << (double) count[8] * 100 / j << "%)" << endl;
-		if (minP < 0.000001) cout << "P-values < 0.000001             " << setw(8) << count[9] << " (" << fixed << (double) count[9] * 100 / j << "%)" << endl;
+		if (minP < 0.05)
+			cout << "P-values < 0.05                 " << setw(8) << count[0] << " (" << fixed << (double) count[0] * 100 / j << "%)" << endl;
+		if (minP < 0.01)
+			cout << "P-values < 0.01                 " << setw(8) << count[1] << " (" << fixed << (double) count[1] * 100 / j << "%)" << endl;
+		if (minP < 0.005)
+			cout << "P-values < 0.005                " << setw(8) << count[2] << " (" << fixed << (double) count[2] * 100 / j << "%)" << endl;
+		if (minP < 0.001)
+			cout << "P-values < 0.001                " << setw(8) << count[3] << " (" << fixed << (double) count[3] * 100 / j << "%)" << endl;
+		if (minP < 0.0005)
+			cout << "P-values < 0.0005               " << setw(8) << count[4] << " (" << fixed << (double) count[4] * 100 / j << "%)" << endl;
+		if (minP < 0.0001)
+			cout << "P-values < 0.0001               " << setw(8) << count[5] << " (" << fixed << (double) count[5] * 100 / j << "%)" << endl;
+		if (minP < 0.00005)
+			cout << "P-values < 0.00005              " << setw(8) << count[6] << " (" << fixed << (double) count[6] * 100 / j << "%)" << endl;
+		if (minP < 0.00001)
+			cout << "P-values < 0.00001              " << setw(8) << count[7] << " (" << fixed << (double) count[7] * 100 / j << "%)" << endl;
+		if (minP < 0.000005)
+			cout << "P-values < 0.000005             " << setw(8) << count[8] << " (" << fixed << (double) count[8] * 100 / j << "%)" << endl;
+		if (minP < 0.000001)
+			cout << "P-values < 0.000001             " << setw(8) << count[9] << " (" << fixed << (double) count[9] * 100 / j << "%)" << endl;
 		cout << "Number of tests                   " << setw(15) << j << endl;
 		cout.precision(8);
 		cout << "Smallest P-value                  " << setw(15) << scientific << minP << endl;
@@ -348,8 +354,7 @@ void Alignment::writeSummary(string prefix, int windowSize, int windowStep)
 	resultsFile.close();
 }
 
-void Alignment::writeExtendedResults(string prefix, int windowSize, int windowStep)
-{
+void Alignment::writeExtendedResults(string prefix, int windowSize, int windowStep) {
 	string bowkerFileName = prefix + ".bowker.csv";
 	string stuartFileName = prefix + ".stuart.csv";
 	string ababnehFileName = prefix + ".ababneh.csv";
@@ -367,27 +372,35 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 	cout << "  delta_ms distance matrix:    " << delta_msFileName << endl;
 
 	unsigned int len = _alignment.size();
-	if (windowSize <= 0) windowSize = _cols;
-	if (windowStep <= 0) windowStep = windowSize;
+	if (windowSize <= 0)
+		windowSize = _cols;
+	if (windowStep <= 0)
+		windowStep = windowSize;
 
 	ofstream bowkerFile, stuartFile, ababnehFile, aitchisonFile, delta_sFile, delta_msFile;
 	bowkerFile.open(bowkerFileName.c_str(), ifstream::trunc);
-	if (!bowkerFile.is_open()) throw("Error, cannot open file " + bowkerFileName);
+	if (!bowkerFile.is_open())
+		throw("Error, cannot open file " + bowkerFileName);
 
 	stuartFile.open(stuartFileName.c_str(), ifstream::trunc);
-	if (!stuartFile.is_open()) throw("Error, cannot open file " + stuartFileName);
+	if (!stuartFile.is_open())
+		throw("Error, cannot open file " + stuartFileName);
 
 	ababnehFile.open(ababnehFileName.c_str(), ifstream::trunc);
-	if (!ababnehFile.is_open()) throw("Error, cannot open file " + ababnehFileName);
+	if (!ababnehFile.is_open())
+		throw("Error, cannot open file " + ababnehFileName);
 
 	aitchisonFile.open(aitchisonFileName.c_str(), ifstream::trunc);
-	if (!aitchisonFile.is_open()) throw("Error, cannot open file " + aitchisonFileName);
+	if (!aitchisonFile.is_open())
+		throw("Error, cannot open file " + aitchisonFileName);
 
 	delta_sFile.open(delta_sFileName.c_str(), ifstream::trunc);
-	if (!delta_sFile.is_open()) throw("Error, cannot open file " + delta_sFileName);
+	if (!delta_sFile.is_open())
+		throw("Error, cannot open file " + delta_sFileName);
 
 	delta_msFile.open(delta_msFileName.c_str(), ifstream::trunc);
-	if (!delta_msFile.is_open()) throw("Error, cannot open file " + delta_msFileName);
+	if (!delta_msFile.is_open())
+		throw("Error, cannot open file " + delta_msFileName);
 
 	bowkerFile.flags(ios::left);
 	stuartFile.flags(ios::left);
@@ -397,8 +410,66 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 	delta_msFile.flags(ios::left);
 
 	unsigned int i = 0;
-	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep)
-	{
+	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep) {
+		double pBowker[len][len];
+		double pStuart[len][len];
+		double pAbabneh[len][len];
+		double aitchison[len][len];
+		double ds[len][len];
+		double dms[len][len];
+
+		//Populate the symmetric matrices
+		int j = 0;
+		for (unsigned int k = 0; k < len; k++) {
+			pBowker[k][k] = 0;
+			pStuart[k][k] = 0;
+			pAbabneh[k][k] = 0;
+			aitchison[k][k] = 0;
+			ds[k][k] = 0;
+			dms[k][k] = 0;
+
+			for (unsigned int l = k+1; l < len; l++) {
+				unsigned int dfB = _df[i][j];
+				unsigned int dfS = _dim - 1;
+				unsigned int dfA = dfB - dfS;
+				double bowker = _bowker[i][j];
+				double stuart = _stuart[i][j];
+				double ababneh = bowker - stuart;
+
+				if (dfB > 0)
+					pBowker[k][l] = gammq(dfB / 2.0, (bowker / 2.0));
+				else
+					pBowker[k][l] = 1.0;
+
+				if (stuart != stuart) { // NaN
+					pStuart[k][l] = numeric_limits<double>::quiet_NaN();
+					pAbabneh[k][l] = numeric_limits<double>::quiet_NaN();
+				} else {
+					if (dfS > 0)
+						pStuart[k][l] = gammq(dfS / 2.0, (stuart / 2.0));
+					else
+						pStuart[k][l] = 1.0;
+
+					if (dfA > 0)
+						pAbabneh[k][l] = gammq(dfA / 2.0, (ababneh / 2.0));
+					else
+						pAbabneh[k][l] = 1.0;
+				}
+
+				aitchison[k][l] = _aitchison[i][j];
+				ds[k][l] = _ds[i][j];
+				dms[k][l] = _dms[i][j];
+
+				// Symmetry
+				pBowker[l][k] = pBowker[k][l];
+				pStuart[l][k] = pStuart[k][l];
+				pAbabneh[l][k] = pAbabneh[k][l];
+				aitchison[l][k] = aitchison[k][l];
+				ds[l][k] = ds[k][l];
+				dms[l][k] = dms[k][l];
+				j++;
+			}
+		}
 		bowkerFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 		stuartFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 		ababnehFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
@@ -406,8 +477,7 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 		delta_sFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 		delta_msFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 
-		for (unsigned int l = 1; l < len; l++)
-		{
+		for (unsigned int l = 0; l < len; l++) {
 			bowkerFile << "\t" << setw(12) << _alignment[l].getName();
 			stuartFile << "\t" << setw(12) << _alignment[l].getName();
 			ababnehFile << "\t" << setw(12) << _alignment[l].getName();
@@ -422,9 +492,7 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 		delta_sFile << endl;
 		delta_msFile << endl;
 
-		unsigned int j = 0;
-		for (unsigned int k = 0; k < len - 1; k++)
-		{
+		for (unsigned int k = 0; k < len; k++) {
 			bowkerFile.flags(ios::left);
 			stuartFile.flags(ios::left);
 			ababnehFile.flags(ios::left);
@@ -443,52 +511,20 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 			aitchisonFile.flags(ios::right);
 			delta_sFile.flags(ios::right);
 			delta_msFile.flags(ios::right);
-			for (unsigned int l = 1; l < len; l++)
-			{
-				if (k >= l)
-				{
-					bowkerFile   << "\t             ";
-					stuartFile   << "\t             ";
-					ababnehFile  << "\t             ";
-					aitchisonFile  << "\t             ";
-					delta_sFile  << "\t             ";
-					delta_msFile << "\t             ";
-				} else
-				{
-					unsigned int dfB = _df[i][j];
-					double bowker = _bowker[i][j];
-					double pBowker = 1.0;
-					if (dfB > 0) pBowker = gammq(dfB / 2.0, (bowker / 2.0));
-					bowkerFile << "\t" << scientific << pBowker;
-
-					unsigned int dfS = _dim - 1;
-					unsigned int dfA = dfB - dfS;
-					double stuart = _stuart[i][j];
-					if (stuart != stuart) // NaN
-					{
-						stuartFile << "\t" << "n/a";
-						ababnehFile << "\t" << "n/a";
-					} else {
-						double pStuart = 1.0;
-						if (dfS > 0) pStuart = gammq(dfS / 2.0, (stuart / 2.0));
-						stuartFile << "\t" << scientific << pStuart;
-
-						double ababneh = bowker - stuart;
-						double pAbabneh = 1.0;
-						if (dfA > 0) pAbabneh = gammq(dfA / 2.0, (ababneh / 2.0));
-						ababnehFile << "\t" << scientific << pAbabneh;
-					}
-
-					double aitchison = _aitchison[i][j];
-					aitchisonFile << "\t" << scientific << aitchison;
-
-					double ds = _ds[i][j];
-					delta_sFile << "\t" << scientific << ds;
-
-					double dms = _dms[i][j];
-					delta_msFile << "\t" << scientific << dms;
-					j++;
+			for (unsigned int l = 0; l < len; l++) {
+				bowkerFile << "\t" << scientific << pBowker[k][l];
+				if (pStuart[k][l] != pStuart[k][l]) // NaN
+						{
+					stuartFile << "\t" << "n/a";
+					ababnehFile << "\t" << "n/a";
+				} else {
+					stuartFile << "\t" << scientific << pStuart[k][l];
+					ababnehFile << "\t" << scientific << pAbabneh[k][l];
 				}
+
+				aitchisonFile << "\t" << scientific << aitchison[k][l];
+				delta_sFile << "\t" << scientific << ds[k][l];
+				delta_msFile << "\t" << scientific << dms[k][l];
 			}
 			bowkerFile << endl;
 			stuartFile << endl;
