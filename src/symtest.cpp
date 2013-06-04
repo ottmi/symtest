@@ -5,6 +5,8 @@
 #include <climits>
 #include <cfloat>
 #include <cstdio>
+#include <cctype>
+#include <cstring>
 #include <unistd.h>
 #include "globals.h"
 #include "Alignment.h"
@@ -32,6 +34,12 @@ int parseArguments(int argc, char** argv, Options *options)
 	options->help = 0;
 	options->grouping.push_back(1);
 	options->writeExtendedTestResults = false;
+	options->writeBowkerFile = false;
+	options->writeStuartFile = false;
+	options->writeAbabnehFile = false;
+	options->writeAitchisonFile = false;
+	options->writeDelta_sFile = false;
+	options->writeDelta_msFile = false;
 	options->windowSize = -1;
 	options->windowStep = -1;
 	options->columnFrom = -1;
@@ -41,7 +49,7 @@ int parseArguments(int argc, char** argv, Options *options)
 	int maxGroup = 0;
 	string listOfSeq;
 
-	while ((c = getopt(argc, argv, "t:s:p:g:c:xw:n:v::h")) != -1)
+	while ((c = getopt(argc, argv, "t:s:p:g:c:x::w:n:v::h")) != -1)
 	{
 		switch (c)
 		{
@@ -117,6 +125,30 @@ int parseArguments(int argc, char** argv, Options *options)
 			}
 			case 'x':
 				options->writeExtendedTestResults = true;
+				if (optarg && strlen(optarg) != 0) {
+					string s(optarg);
+					transform(s.begin(), s.end(), s.begin(), ::tolower);
+					cout << "Parsing " << s << endl;
+					if (s.find("bowker") != string::npos)
+						options->writeBowkerFile = true;
+					if (s.find("stuart") != string::npos)
+						options->writeStuartFile = true;
+					if (s.find("ababneh") != string::npos)
+						options->writeAbabnehFile = true;
+					if (s.find("aitchison") != string::npos)
+						options->writeAitchisonFile= true;
+					if (s.find("delta_s") != string::npos)
+						options->writeDelta_sFile = true;
+					if (s.find("delta_ms") != string::npos)
+						options->writeDelta_msFile = true;
+				} else {
+					options->writeBowkerFile = true;
+					options->writeStuartFile = true;
+					options->writeAbabnehFile = true;
+					options->writeAitchisonFile= true;
+					options->writeDelta_sFile = true;
+					options->writeDelta_msFile = true;
+				}
 				break;
 			case 'w':
 			{
@@ -240,8 +272,10 @@ void printSyntax()
     cout << "  -g<LIST>       Grouping of codon sites: comma-separated, pos/neg to use/skip" << endl;
     cout << "                 e.g., 1,2,-3 for duplets comprising 1st and 2nd position" << endl;
     cout << "                       1,2,3  for triplets comprising 1st, 2nd, and 3rd position" << endl;
+    cout << "  -x[LIST]       Write extended output files [default: all available]" << endl;
+    cout << "                 Optional: restrict to files in LIST (comma-separated)" << endl;
+    cout << "                 Available: bowker, stuart, ababneh, aitchison, delta_s, delta_ms" << endl;
     cout << endl;
-    cout << "  -x             Write extended output files with test results" << endl;
     cout << "  -v<n5>         Be increasingly verbose [n5 = 0|1|2]" << endl;
 #ifdef _OPENMP
     cout << "  -n<n6>         Number of threads [default: " << omp_get_max_threads() << "]" << endl;
@@ -278,9 +312,7 @@ int main(int argc, char** argv)
 	{
 		Alignment alignment = Alignment(&options);
 		alignment.testSymmetry(options.prefix, options.windowSize, options.windowStep);
-		alignment.writeSummary(options.prefix, options.windowSize, options.windowStep);
-		if (options.writeExtendedTestResults)
-			alignment.writeExtendedResults(options.prefix, options.windowSize, options.windowStep);
+		alignment.writeResults(&options);
 	} catch (string& s)
 	{
 		cerr << s << endl;

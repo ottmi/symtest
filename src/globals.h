@@ -7,7 +7,7 @@
 using namespace std;
 
 #define PROGNAME "symtest"
-#define VERSION "2.0.20"
+#define VERSION "2.0.21"
 #define PROGDATE "2013-06-04"
 
 #define _DNA_DATA	0
@@ -38,6 +38,12 @@ typedef struct opt_struct
     int columnFrom;
     int columnTo;
     bool writeExtendedTestResults;
+    bool writeBowkerFile;
+    bool writeStuartFile;
+    bool writeAbabnehFile;
+    bool writeAitchisonFile;
+    bool writeDelta_sFile;
+    bool writeDelta_msFile;
     int windowSize;
     int windowStep;
     int help;
