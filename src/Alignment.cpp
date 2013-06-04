@@ -288,63 +288,49 @@ void Alignment::writeSummary(string prefix, int windowSize, int windowStep) {
 		unsigned int j = 0;
 		for (unsigned int k = 0; k < len; k++)
 			for (unsigned int l = k + 1; l < len; l++) {
+
 				resultsFile << _alignment[k].getName() << "\t" << _alignment[l].getName() << scientific;
 
 				unsigned int dfB = _df[i][j];
-				double bowker = _bowker[i][j];
-				double pBowker = 1.0;
-				if (dfB > 0)
-					pBowker = gammq(dfB / 2.0, (bowker / 2.0));
-				resultsFile << "\t" << bowker << "\t" << dfB << "\t" << pBowker;
+				resultsFile << "\t" << _bowker[i][j] << "\t" << dfB << "\t" << _pBowker[i][j];
 
 				unsigned int dfS = _dim - 1;
 				unsigned int dfA = dfB - dfS;
-				double stuart = _stuart[i][j];
-				if (stuart != stuart) // NaN
-						{
+				if (_stuart[i][j] != _stuart[i][j]) { // NaN
 					resultsFile << "\t" << "n/a" << "\t" << "n/a" << "\t" << "n/a";
 					resultsFile << "\t" << "n/a" << "\t" << "n/a" << "\t" << "n/a";
 				} else {
-					double pStuart = 1.0;
-					if (dfS > 0)
-						pStuart = gammq(dfS / 2.0, (stuart / 2.0));
-					resultsFile << "\t" << stuart << "\t" << dfS << "\t" << pStuart;
+					resultsFile << "\t" << _stuart[i][j] << "\t" << dfS << "\t" << _pStuart[i][j];
 
-					double ababneh = bowker - stuart;
-					double pAbabneh = 1.0;
-					if (dfA > 0)
-						pAbabneh = gammq(dfA / 2.0, (ababneh / 2.0));
-					resultsFile << "\t" << ababneh << "\t" << dfA << "\t" << pAbabneh;
+					double ababneh = _bowker[i][j] - _stuart[i][j];
+					resultsFile << "\t" << ababneh << "\t" << dfA << "\t" << _pAbabneh[i][j];
 				}
 
-				double aitchison = _aitchison[i][j];
-				double ds = _ds[i][j];
-				double dms = _dms[i][j];
-				resultsFile << "\t" << aitchison << "\t" << ds << "\t" << dms;
+				resultsFile << "\t" << _aitchison[i][j] << "\t" << _ds[i][j] << "\t" << _dms[i][j];
 
 				resultsFile << "\t" << windowStart << "\t" << windowStart + windowSize - 1 << endl;
 
-				if (pBowker < minP)
-					minP = pBowker;
-				if (pBowker < 0.05)
+				if (_pBowker[i][j] < minP)
+					minP = _pBowker[i][j];
+				if (_pBowker[i][j] < 0.05)
 					count[0]++;
-				if (pBowker < 0.01)
+				if (_pBowker[i][j] < 0.01)
 					count[1]++;
-				if (pBowker < 0.005)
+				if (_pBowker[i][j] < 0.005)
 					count[2]++;
-				if (pBowker < 0.001)
+				if (_pBowker[i][j] < 0.001)
 					count[3]++;
-				if (pBowker < 0.0005)
+				if (_pBowker[i][j] < 0.0005)
 					count[4]++;
-				if (pBowker < 0.0001)
+				if (_pBowker[i][j] < 0.0001)
 					count[5]++;
-				if (pBowker < 0.00005)
+				if (_pBowker[i][j] < 0.00005)
 					count[6]++;
-				if (pBowker < 0.00001)
+				if (_pBowker[i][j] < 0.00001)
 					count[7]++;
-				if (pBowker < 0.000005)
+				if (_pBowker[i][j] < 0.000005)
 					count[8]++;
-				if (pBowker < 0.000001)
+				if (_pBowker[i][j] < 0.000001)
 					count[9]++;
 
 				j++;
