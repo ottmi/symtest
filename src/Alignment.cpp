@@ -91,7 +91,7 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 		cout << "  WindowSize=" << windowSize << " StepWidth=" << windowStep << " _cols=" << _cols << endl;
 
 	cout.precision(6);
-	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep) {
+	for (unsigned int windowStart = 0; windowStart < _cols; windowStart += windowStep) {
 		vector<vector<double> > baseFrequencies;
 		vector<unsigned int> dfList;
 		vector<double> bowkerList;
@@ -103,11 +103,13 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 		vector<double> pAbabnehList;
 		vector<double> aitchisonList;
 
-		for (unsigned int k = 0; k < len; k++) // 1st sequence
-				{
+		for (unsigned int k = 0; k < len; k++) { // 1st sequence
 			Sequence s1 = _alignment[k];
 			vector<unsigned long> baseOccurences(_dim, 0);
-			for (unsigned int m = windowStart; m < windowStart + windowSize; m++) {
+			unsigned int windowEnd = windowStart + windowSize;
+			if (windowEnd > _cols)
+				windowEnd = _cols;
+			for (unsigned int m = windowStart; m < windowEnd; m++) {
 				unsigned int c = s1.getNumerical(m);
 				if (s1.charIsUnambiguous(c))
 					baseOccurences[c]++;
@@ -125,14 +127,16 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 			if (verbose)
 				cout << endl;
 
-			for (unsigned int l = k + 1; l < len; l++) // 2nd sequence
-					{
+			for (unsigned int l = k + 1; l < len; l++) { // 2nd sequence
 				Sequence s2 = _alignment[l];
 				unsigned int sum = 0;
 				map<pair<unsigned int, unsigned int>, unsigned int> nmap;
 				map<pair<unsigned int, unsigned int>, unsigned int>::iterator it;
 				unsigned long id;
-				for (unsigned int m = windowStart; m < windowStart + windowSize; m++) {
+				unsigned int windowEnd = windowStart + windowSize;
+				if (windowEnd > _cols)
+					windowEnd = _cols;
+				for (unsigned int m = windowStart; m < windowEnd; m++) {
 					unsigned int c1 = s1.getNumerical(m);
 					unsigned int c2 = s2.getNumerical(m);
 					if (s1.charIsUnambiguous(c1) && s2.charIsUnambiguous(c2)) {
@@ -282,7 +286,10 @@ void Alignment::writeSummary(string prefix, int windowSize, int windowStep) {
 	resultsFile << "\tStart\tEnd" << endl;
 
 	unsigned int i = 0;
-	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep) {
+	for (unsigned int windowStart = 0; windowStart < _cols; windowStart += windowStep) {
+		unsigned int windowEnd = windowStart + windowSize;
+		if (windowEnd > _cols)
+			windowEnd = _cols;
 		vector<unsigned int> count(10, 0);
 		double minP = 1.0;
 		unsigned int j = 0;
@@ -308,7 +315,7 @@ void Alignment::writeSummary(string prefix, int windowSize, int windowStep) {
 
 				resultsFile << "\t" << _aitchison[i][j] << "\t" << _ds[i][j] << "\t" << _dms[i][j];
 
-				resultsFile << "\t" << windowStart << "\t" << windowStart + windowSize - 1 << endl;
+				resultsFile << "\t" << windowStart << "\t" << windowEnd - 1 << endl;
 
 				if (_pBowker[i][j] < minP)
 					minP = _pBowker[i][j];
@@ -336,7 +343,7 @@ void Alignment::writeSummary(string prefix, int windowSize, int windowStep) {
 				j++;
 			}
 
-		cout << endl << "Highlights from the analysis (window " << windowStart << "-" << windowStart + windowSize - 1 << "):" << endl;
+		cout << endl << "Highlights from the analysis (window " << windowStart << "-" << windowEnd - 1 << "):" << endl;
 		cout.precision(2);
 		if (minP < 0.05)
 			cout << "P-values < 0.05                 " << setw(8) << count[0] << " (" << fixed << (double) count[0] * 100 / j << "%)" << endl;
@@ -424,13 +431,17 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 	delta_msFile.flags(ios::left);
 
 	unsigned int i = 0;
-	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep) {
-		bowkerFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
-		stuartFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
-		ababnehFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
-		aitchisonFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
-		delta_sFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
-		delta_msFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
+	for (unsigned int windowStart = 0; windowStart < _cols; windowStart += windowStep) {
+		unsigned int windowEnd = windowStart + windowSize - 1;
+		if (windowEnd > _cols - 1)
+			windowEnd = _cols - 1;
+
+		bowkerFile << windowStart << "-" << setw(6) << windowEnd;
+		stuartFile << windowStart << "-" << setw(6) << windowEnd;
+		ababnehFile << windowStart << "-" << setw(6) << windowEnd;
+		aitchisonFile << windowStart << "-" << setw(6) << windowEnd;
+		delta_sFile << windowStart << "-" << setw(6) << windowEnd;
+		delta_msFile << windowStart << "-" << setw(6) << windowEnd;
 
 		for (unsigned int l = 0; l < len; l++) {
 			bowkerFile << "\t" << setw(12) << _alignment[l].getName();
