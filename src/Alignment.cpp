@@ -376,21 +376,8 @@ void Alignment::writeSummary(string prefix, int windowSize, int windowStep) {
 }
 
 void Alignment::writeExtendedResults(string prefix, int windowSize, int windowStep) {
-	string bowkerFileName = prefix + ".bowker.csv";
-	string stuartFileName = prefix + ".stuart.csv";
-	string ababnehFileName = prefix + ".ababneh.csv";
-	string delta_sFileName = prefix + ".delta_s.dis";
-	string delta_msFileName = prefix + ".delta_ms.dis";
-	string aitchisonFileName = prefix + ".aitchison.dis";
-
-	cout << endl;
-	cout << "Writing extended results to:" << endl;
-	cout << "  Bowker\'s test:               " << bowkerFileName << endl;
-	cout << "  Stuart\'s test:               " << stuartFileName << endl;
-	cout << "  Ababneh\'s test:              " << ababnehFileName << endl;
-	cout << "  Aitchison\'s distance matrix: " << aitchisonFileName << endl;
-	cout << "  delta_s distance matrix:     " << delta_sFileName << endl;
-	cout << "  delta_ms distance matrix:    " << delta_msFileName << endl;
+	ofstream bowkerFile, stuartFile, ababnehFile, aitchisonFile, delta_sFile, delta_msFile;
+	string bowkerFileName, stuartFileName, ababnehFileName, aitchisonFileName, delta_sFileName, delta_msFileName;
 
 	unsigned int len = _alignment.size();
 	if (windowSize <= 0)
@@ -398,50 +385,83 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 	if (windowStep <= 0)
 		windowStep = windowSize;
 
-	ofstream bowkerFile, stuartFile, ababnehFile, aitchisonFile, delta_sFile, delta_msFile;
-	bowkerFile.open(bowkerFileName.c_str(), ifstream::trunc);
-	if (!bowkerFile.is_open())
-		throw("Error, cannot open file " + bowkerFileName);
+	string bowkerBaseName    = prefix + ".bowker.";
+	string stuartBaseName    = prefix + ".stuart.";
+	string ababnehBaseName   = prefix + ".ababneh.";
+	string aitchisonBaseName = prefix + ".aitchison.";
+	string delta_sBaseName   = prefix + ".delta_s.";
+	string delta_msBaseName  = prefix + ".delta_ms.";
 
-	stuartFile.open(stuartFileName.c_str(), ifstream::trunc);
-	if (!stuartFile.is_open())
-		throw("Error, cannot open file " + stuartFileName);
-
-	ababnehFile.open(ababnehFileName.c_str(), ifstream::trunc);
-	if (!ababnehFile.is_open())
-		throw("Error, cannot open file " + ababnehFileName);
-
-	aitchisonFile.open(aitchisonFileName.c_str(), ifstream::trunc);
-	if (!aitchisonFile.is_open())
-		throw("Error, cannot open file " + aitchisonFileName);
-
-	delta_sFile.open(delta_sFileName.c_str(), ifstream::trunc);
-	if (!delta_sFile.is_open())
-		throw("Error, cannot open file " + delta_sFileName);
-
-	delta_msFile.open(delta_msFileName.c_str(), ifstream::trunc);
-	if (!delta_msFile.is_open())
-		throw("Error, cannot open file " + delta_msFileName);
-
-	bowkerFile.flags(ios::left);
-	stuartFile.flags(ios::left);
-	ababnehFile.flags(ios::left);
-	aitchisonFile.flags(ios::left);
-	delta_sFile.flags(ios::left);
-	delta_msFile.flags(ios::left);
+	cout << endl;
+	cout << "Writing extended results to:" << endl;
+	if (windowSize < (int) _cols) {
+		cout << "  Bowker\'s test:               " << bowkerBaseName    + "<window>.csv" << endl;
+		cout << "  Stuart\'s test:               " << stuartBaseName    + "<window>.csv"<< endl;
+		cout << "  Ababneh\'s test:              " << ababnehBaseName   + "<window>.csv"<< endl;
+		cout << "  Aitchison\'s distance matrix: " << aitchisonBaseName + "<window>.dis"<< endl;
+		cout << "  delta_s distance matrix:      " << delta_sBaseName   + "<window>.dis"<< endl;
+		cout << "  delta_ms distance matrix:     " << delta_msBaseName  + "<window>.dis"<< endl;
+	} else {
+		bowkerFileName    = bowkerBaseName    + "csv";
+		stuartFileName    = stuartBaseName    + "csv";
+		ababnehFileName   = ababnehBaseName   + "csv";
+		aitchisonFileName = aitchisonBaseName + "dis";
+		delta_sFileName   = delta_sBaseName   + "dis";
+		delta_msFileName  = delta_msBaseName  + "dis";
+		cout << "  Bowker\'s test:               " << bowkerFileName << endl;
+		cout << "  Stuart\'s test:               " << stuartFileName << endl;
+		cout << "  Ababneh\'s test:              " << ababnehFileName << endl;
+		cout << "  Aitchison\'s distance matrix: " << aitchisonFileName << endl;
+		cout << "  delta_s distance matrix:      " << delta_sFileName << endl;
+		cout << "  delta_ms distance matrix:     " << delta_msFileName << endl;
+	}
 
 	unsigned int i = 0;
 	for (unsigned int windowStart = 0; windowStart < _cols; windowStart += windowStep) {
-		unsigned int windowEnd = windowStart + windowSize - 1;
-		if (windowEnd > _cols - 1)
-			windowEnd = _cols - 1;
+		if (windowSize < (int) _cols) {
+			unsigned int windowEnd = windowStart + windowSize - 1;
+			if (windowEnd > _cols - 1)
+				windowEnd = _cols - 1;
+			stringstream ss;
+			ss << windowStart << "-" << windowEnd << ".";
 
-		bowkerFile << windowStart << "-" << setw(6) << windowEnd;
-		stuartFile << windowStart << "-" << setw(6) << windowEnd;
-		ababnehFile << windowStart << "-" << setw(6) << windowEnd;
-		aitchisonFile << windowStart << "-" << setw(6) << windowEnd;
-		delta_sFile << windowStart << "-" << setw(6) << windowEnd;
-		delta_msFile << windowStart << "-" << setw(6) << windowEnd;
+			bowkerFileName    = bowkerBaseName    + ss.str() + "csv";
+			stuartFileName    = stuartBaseName    + ss.str() + "csv";
+			ababnehFileName   = ababnehBaseName   + ss.str() + "csv";
+			aitchisonFileName = aitchisonBaseName + ss.str() + "dis";
+			delta_sFileName   = delta_sBaseName   + ss.str() + "dis";
+			delta_msFileName  = delta_msBaseName  + ss.str() + "dis";
+		}
+		bowkerFile.open(bowkerFileName.c_str(), ifstream::trunc);
+		if (!bowkerFile.is_open())
+			throw("Error, cannot open file " + bowkerFileName);
+
+		stuartFile.open(stuartFileName.c_str(), ifstream::trunc);
+		if (!stuartFile.is_open())
+			throw("Error, cannot open file " + stuartFileName);
+
+		ababnehFile.open(ababnehFileName.c_str(), ifstream::trunc);
+		if (!ababnehFile.is_open())
+			throw("Error, cannot open file " + ababnehFileName);
+
+		aitchisonFile.open(aitchisonFileName.c_str(), ifstream::trunc);
+		if (!aitchisonFile.is_open())
+			throw("Error, cannot open file " + aitchisonFileName);
+
+		delta_sFile.open(delta_sFileName.c_str(), ifstream::trunc);
+		if (!delta_sFile.is_open())
+			throw("Error, cannot open file " + delta_sFileName);
+
+		delta_msFile.open(delta_msFileName.c_str(), ifstream::trunc);
+		if (!delta_msFile.is_open())
+			throw("Error, cannot open file " + delta_msFileName);
+
+		bowkerFile.flags(ios::left);
+		stuartFile.flags(ios::left);
+		ababnehFile.flags(ios::left);
+		aitchisonFile.flags(ios::left);
+		delta_sFile.flags(ios::left);
+		delta_msFile.flags(ios::left);
 
 		for (unsigned int l = 0; l < len; l++) {
 			bowkerFile << "\t" << setw(12) << _alignment[l].getName();
@@ -479,18 +499,18 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 			delta_msFile.flags(ios::right);
 			for (unsigned int l = 0; l < len; l++) {
 				if (k == l) {
-					bowkerFile    << "\t0";
-					stuartFile    << "\t0";
-					ababnehFile   << "\t0";
+					bowkerFile << "\t0";
+					stuartFile << "\t0";
+					ababnehFile << "\t0";
 					aitchisonFile << "\t0";
-					delta_sFile   << "\t0";
-					delta_msFile  << "\t0";
+					delta_sFile << "\t0";
+					delta_msFile << "\t0";
 				} else {
 					int m;
 					if (k < l)
-						m = k*(len-1) - (k-1)*k/2 + l - k - 1;
+						m = k * (len - 1) - (k - 1) * k / 2 + l - k - 1;
 					else
-						m = l*(len-1) - (l-1)*l/2 + k - l - 1;
+						m = l * (len - 1) - (l - 1) * l / 2 + k - l - 1;
 
 					bowkerFile << "\t" << scientific << _pBowker[i][m];
 					if (_pStuart[i][m] != _pStuart[i][m]) { // NaN
@@ -512,13 +532,12 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 			delta_sFile << endl;
 			delta_msFile << endl;
 		}
+		bowkerFile.close();
+		stuartFile.close();
+		ababnehFile.close();
+		aitchisonFile.close();
+		delta_sFile.close();
+		delta_msFile.close();
 		i++;
 	}
-
-	bowkerFile.close();
-	stuartFile.close();
-	ababnehFile.close();
-	aitchisonFile.close();
-	delta_sFile.close();
-	delta_msFile.close();
 }
