@@ -34,10 +34,13 @@ private:
 
 	vector< vector<unsigned int> > _df;
 	vector< vector<double> > _bowker;
+	vector< vector<double> > _pBowker;
+	vector< vector<double> > _stuart;
+	vector< vector<double> > _pStuart;
+	vector< vector<double> > _pAbabneh;
+	vector< vector<double> > _aitchison;
 	vector< vector<double> > _ds;
 	vector< vector<double> > _dms;
-	vector< vector<double> > _stuart;
-	vector< vector<double> > _aitchison;
 };
 
 #endif /* ALIGNMENT_H_ */

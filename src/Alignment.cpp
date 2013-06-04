@@ -95,9 +95,12 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 		vector<vector<double> > baseFrequencies;
 		vector<unsigned int> dfList;
 		vector<double> bowkerList;
+		vector<double> pBowkerList;
 		vector<double> dsList;
 		vector<double> dmsList;
 		vector<double> stuartList;
+		vector<double> pStuartList;
+		vector<double> pAbabnehList;
 		vector<double> aitchisonList;
 
 		for (unsigned int k = 0; k < len; k++) // 1st sequence
@@ -202,6 +205,28 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 				}
 
 				stuartList.push_back(stuart);
+
+				if (df > 0)
+					pBowkerList.push_back(gammq(df / 2.0, (bowker / 2.0)));
+				else
+					pBowkerList.push_back(1.0);
+
+				unsigned int dfS = _dim - 1;
+				unsigned int dfA = df - dfS;
+				if (stuart != stuart) { // NaN
+					pStuartList.push_back(numeric_limits<double>::quiet_NaN());
+					pAbabnehList.push_back(numeric_limits<double>::quiet_NaN());
+				} else {
+					if (dfS > 0)
+						pStuartList.push_back(gammq(dfS / 2.0, (stuart / 2.0)));
+					else
+						pStuartList.push_back(1.0);
+
+					if (dfA > 0)
+						pAbabnehList.push_back(gammq(dfA / 2.0, ((bowker - stuart) / 2.0)));
+					else
+						pAbabnehList.push_back(1.0);
+				}
 			}
 		}
 
@@ -224,9 +249,12 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 
 		_df.push_back(dfList);
 		_bowker.push_back(bowkerList);
+		_pBowker.push_back(pBowkerList);
 		_ds.push_back(dsList);
 		_dms.push_back(dmsList);
 		_stuart.push_back(stuartList);
+		_pStuart.push_back(pStuartList);
+		_pAbabneh.push_back(pAbabnehList);
 		_aitchison.push_back(aitchisonList);
 	}
 }
@@ -411,65 +439,6 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 
 	unsigned int i = 0;
 	for (unsigned int windowStart = 0; windowStart + windowSize <= _cols; windowStart += windowStep) {
-		double pBowker[len][len];
-		double pStuart[len][len];
-		double pAbabneh[len][len];
-		double aitchison[len][len];
-		double ds[len][len];
-		double dms[len][len];
-
-		//Populate the symmetric matrices
-		int j = 0;
-		for (unsigned int k = 0; k < len; k++) {
-			pBowker[k][k] = 0;
-			pStuart[k][k] = 0;
-			pAbabneh[k][k] = 0;
-			aitchison[k][k] = 0;
-			ds[k][k] = 0;
-			dms[k][k] = 0;
-
-			for (unsigned int l = k+1; l < len; l++) {
-				unsigned int dfB = _df[i][j];
-				unsigned int dfS = _dim - 1;
-				unsigned int dfA = dfB - dfS;
-				double bowker = _bowker[i][j];
-				double stuart = _stuart[i][j];
-				double ababneh = bowker - stuart;
-
-				if (dfB > 0)
-					pBowker[k][l] = gammq(dfB / 2.0, (bowker / 2.0));
-				else
-					pBowker[k][l] = 1.0;
-
-				if (stuart != stuart) { // NaN
-					pStuart[k][l] = numeric_limits<double>::quiet_NaN();
-					pAbabneh[k][l] = numeric_limits<double>::quiet_NaN();
-				} else {
-					if (dfS > 0)
-						pStuart[k][l] = gammq(dfS / 2.0, (stuart / 2.0));
-					else
-						pStuart[k][l] = 1.0;
-
-					if (dfA > 0)
-						pAbabneh[k][l] = gammq(dfA / 2.0, (ababneh / 2.0));
-					else
-						pAbabneh[k][l] = 1.0;
-				}
-
-				aitchison[k][l] = _aitchison[i][j];
-				ds[k][l] = _ds[i][j];
-				dms[k][l] = _dms[i][j];
-
-				// Symmetry
-				pBowker[l][k] = pBowker[k][l];
-				pStuart[l][k] = pStuart[k][l];
-				pAbabneh[l][k] = pAbabneh[k][l];
-				aitchison[l][k] = aitchison[k][l];
-				ds[l][k] = ds[k][l];
-				dms[l][k] = dms[k][l];
-				j++;
-			}
-		}
 		bowkerFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 		stuartFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
 		ababnehFile << windowStart << "-" << setw(6) << windowStart + windowSize - 1;
@@ -512,19 +481,32 @@ void Alignment::writeExtendedResults(string prefix, int windowSize, int windowSt
 			delta_sFile.flags(ios::right);
 			delta_msFile.flags(ios::right);
 			for (unsigned int l = 0; l < len; l++) {
-				bowkerFile << "\t" << scientific << pBowker[k][l];
-				if (pStuart[k][l] != pStuart[k][l]) // NaN
-						{
-					stuartFile << "\t" << "n/a";
-					ababnehFile << "\t" << "n/a";
+				if (k == l) {
+					bowkerFile    << "\t0";
+					stuartFile    << "\t0";
+					ababnehFile   << "\t0";
+					aitchisonFile << "\t0";
+					delta_sFile   << "\t0";
+					delta_msFile  << "\t0";
 				} else {
-					stuartFile << "\t" << scientific << pStuart[k][l];
-					ababnehFile << "\t" << scientific << pAbabneh[k][l];
-				}
+					int m;
+					if (k < l)
+						m = k*(len-1) - (k-1)*k/2 + l - k - 1;
+					else
+						m = l*(len-1) - (l-1)*l/2 + k - l - 1;
 
-				aitchisonFile << "\t" << scientific << aitchison[k][l];
-				delta_sFile << "\t" << scientific << ds[k][l];
-				delta_msFile << "\t" << scientific << dms[k][l];
+					bowkerFile << "\t" << scientific << _pBowker[i][m];
+					if (_pStuart[i][m] != _pStuart[i][m]) { // NaN
+						stuartFile << "\t" << "n/a";
+						ababnehFile << "\t" << "n/a";
+					} else {
+						stuartFile << "\t" << scientific << _pStuart[i][m];
+						ababnehFile << "\t" << scientific << _pAbabneh[i][m];
+					}
+					aitchisonFile << "\t" << scientific << _aitchison[i][m];
+					delta_sFile << "\t" << scientific << _ds[i][m];
+					delta_msFile << "\t" << scientific << _dms[i][m];
+				}
 			}
 			bowkerFile << endl;
 			stuartFile << endl;
