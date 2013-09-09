@@ -295,6 +295,7 @@ void Alignment::writeResults(Options* options) {
 			windowEnd = _cols;
 		vector<unsigned int> count(10, 0);
 		double minP = 1.0;
+		double sumP = 0;
 		unsigned int j = 0;
 		for (unsigned int k = 0; k < len; k++)
 			for (unsigned int l = k + 1; l < len; l++) {
@@ -342,6 +343,7 @@ void Alignment::writeResults(Options* options) {
 					count[8]++;
 				if (_pBowker[i][j] < 0.000001)
 					count[9]++;
+				sumP+= _pBowker[i][j];
 
 				j++;
 			}
@@ -370,6 +372,7 @@ void Alignment::writeResults(Options* options) {
 			cout << "P-values < 0.000001             " << setw(8) << count[9] << " (" << fixed << (double) count[9] * 100 / j << "%)" << endl;
 		cout << "Number of tests                   " << setw(15) << j << endl;
 		cout.precision(8);
+		cout << "Average P-value                   " << setw(15) << scientific << sumP / j << endl;
 		cout << "Smallest P-value                  " << setw(15) << scientific << minP << endl;
 
 		i++;
