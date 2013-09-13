@@ -49,7 +49,7 @@ int parseArguments(int argc, char** argv, Options *options)
 	int maxGroup = 0;
 	string listOfSeq;
 
-	while ((c = getopt(argc, argv, "t:s:p:g:c:x::w:n:v::h")) != -1)
+	while ((c = getopt(argc, argv, ":t:s:p:g:c:x:w:n:v:h")) != -1)
 	{
 		switch (c)
 		{
@@ -124,32 +124,25 @@ int parseArguments(int argc, char** argv, Options *options)
 				break;
 			}
 			case 'x':
+			{
 				options->writeExtendedTestResults = true;
-				if (optarg && strlen(optarg) != 0) {
-					string s(optarg);
-					transform(s.begin(), s.end(), s.begin(), ::tolower);
-					cout << "Parsing " << s << endl;
-					if (s.find("bowker") != string::npos)
-						options->writeBowkerFile = true;
-					if (s.find("stuart") != string::npos)
-						options->writeStuartFile = true;
-					if (s.find("ababneh") != string::npos)
-						options->writeAbabnehFile = true;
-					if (s.find("aitchison") != string::npos)
-						options->writeAitchisonFile= true;
-					if (s.find("delta_s") != string::npos)
-						options->writeDelta_sFile = true;
-					if (s.find("delta_ms") != string::npos)
-						options->writeDelta_msFile = true;
-				} else {
+				string s(optarg);
+				transform(s.begin(), s.end(), s.begin(), ::tolower);
+				cout << "Parsing " << s << endl;
+				if (s.find("bowker") != string::npos)
 					options->writeBowkerFile = true;
+				if (s.find("stuart") != string::npos)
 					options->writeStuartFile = true;
+				if (s.find("ababneh") != string::npos)
 					options->writeAbabnehFile = true;
+				if (s.find("aitchison") != string::npos)
 					options->writeAitchisonFile= true;
+				if (s.find("delta_s") != string::npos)
 					options->writeDelta_sFile = true;
+				if (s.find("delta_ms") != string::npos)
 					options->writeDelta_msFile = true;
-				}
 				break;
+			}
 			case 'w':
 			{
 				int i;
@@ -168,13 +161,25 @@ int parseArguments(int argc, char** argv, Options *options)
 				break;
 #endif
 			case 'v':
-				if (optarg)
-					verbose = atoi(optarg);
-				else
-					verbose = 1;
+				verbose = atoi(optarg);
 				break;
 			case 'h':
 				options->help = 1;
+				break;
+			case ':':
+				if (optopt == 'x') {
+					options->writeExtendedTestResults = true;
+					options->writeBowkerFile = true;
+					options->writeStuartFile = true;
+					options->writeAbabnehFile = true;
+					options->writeAitchisonFile= true;
+					options->writeDelta_sFile = true;
+					options->writeDelta_msFile = true;
+				} else if (optopt == 'v') {
+					verbose = 1;
+				} else {
+					cerr << "Missing argument for parameter -" << (char) optopt << endl;
+				}
 				break;
 			default:
 				if (c != '?') cerr << "Unknown parameter: " << c << endl;
