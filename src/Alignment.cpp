@@ -348,6 +348,13 @@ void Alignment::writeResults(Options* options) {
 				j++;
 			}
 
+		sort(_pBowker[i].begin(), _pBowker[i].end());
+		double medP = _pBowker[i][_pBowker[i].size()/2 ];
+		if (_pBowker[i].size()%2 == 0) {
+			medP+= _pBowker[i][_pBowker[i].size()/2 - 1 ];
+			medP/= 2;
+		}
+
 		cout << endl << "Highlights from the analysis (window " << windowStart << "-" << windowEnd - 1 << "):" << endl;
 		cout.precision(2);
 		if (minP < 0.05)
@@ -372,6 +379,7 @@ void Alignment::writeResults(Options* options) {
 			cout << "P-values < 0.000001             " << setw(8) << count[9] << " (" << fixed << (double) count[9] * 100 / j << "%)" << endl;
 		cout << "Number of tests                   " << setw(15) << j << endl;
 		cout.precision(8);
+		cout << "Median P-value                    " << setw(15) << scientific << medP << endl;
 		cout << "Average P-value                   " << setw(15) << scientific << sumP / j << endl;
 		cout << "Smallest P-value                  " << setw(15) << scientific << minP << endl;
 
