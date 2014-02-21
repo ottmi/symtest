@@ -348,10 +348,11 @@ void Alignment::writeResults(Options* options) {
 				j++;
 			}
 
-		sort(_pBowker[i].begin(), _pBowker[i].end());
-		double medP = _pBowker[i][_pBowker[i].size()/2 ];
-		if (_pBowker[i].size()%2 == 0) {
-			medP+= _pBowker[i][_pBowker[i].size()/2 - 1 ];
+		vector<double> sortedP(_pBowker[i].begin(), _pBowker[i].end());
+		sort(sortedP.begin(), sortedP.end());
+		double medP = sortedP[sortedP.size()/2 ];
+		if (sortedP.size()%2 == 0) {
+			medP+= sortedP[sortedP.size()/2 - 1 ];
 			medP/= 2;
 		}
 
