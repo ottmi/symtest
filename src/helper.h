@@ -19,10 +19,6 @@ istream& safeGetline(istream& is, string& t);
 string adjustString(string s, bool upercase=false);
 unsigned int mapCharToNum(string s, int dataType);
 string mapNumToChar(unsigned int n, int dataType, int groupSize);
-void gcf(double *gammcf, double a, double x, double *gln);
-void gser(double *gamser, double a, double x, double *gln);
-double gammln(double xx);
-double gammq(double a, double x);
 
 template<class T> string str(const T& t)
 {

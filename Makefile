@@ -1,7 +1,7 @@
 CXX = g++
-CXXFLAGS = -O3 
+CXXFLAGS = -O3
 LDFLAGS = 
-LIBS = -lm
+LIBS = -lm -lgsl
 
 VERSION := $(shell awk '/VERSION/ {print $$3}' src/globals.h| sed 's/\"\(.*\)\"/\1/')
 MODULES := Alignment.cpp AlignmentReader.cpp Matrix.cpp Sequence.cpp helper.cpp symtest.cpp

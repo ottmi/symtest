@@ -10,6 +10,7 @@
 #include <sstream>
 #include <map>
 #include <utility>
+#include <gsl/gsl_sf_gamma.h>
 #include "AlignmentReader.h"
 #include "Alignment.h"
 #include "Matrix.h"
@@ -212,7 +213,7 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 				stuartList.push_back(stuart);
 
 				if (df > 0)
-					pBowkerList.push_back(gammq(df / 2.0, (bowker / 2.0)));
+					pBowkerList.push_back(gsl_sf_gamma_inc_Q(df / 2.0, (bowker / 2.0)));
 				else
 					pBowkerList.push_back(1.0);
 
@@ -223,12 +224,12 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 					pAbabnehList.push_back(numeric_limits<double>::quiet_NaN());
 				} else {
 					if (dfS > 0)
-						pStuartList.push_back(gammq(dfS / 2.0, (stuart / 2.0)));
+						pStuartList.push_back(gsl_sf_gamma_inc_Q(dfS / 2.0, (stuart / 2.0)));
 					else
 						pStuartList.push_back(1.0);
 
 					if (dfA > 0)
-						pAbabnehList.push_back(gammq(dfA / 2.0, ((bowker - stuart) / 2.0)));
+						pAbabnehList.push_back(gsl_sf_gamma_inc_Q(dfA / 2.0, ((bowker - stuart) / 2.0)));
 					else
 						pAbabnehList.push_back(1.0);
 				}
