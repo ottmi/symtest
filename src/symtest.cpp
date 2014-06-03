@@ -126,21 +126,32 @@ int parseArguments(int argc, char** argv, Options *options)
 			case 'x':
 			{
 				options->writeExtendedTestResults = true;
-				string s(optarg);
-				transform(s.begin(), s.end(), s.begin(), ::tolower);
-				cout << "Parsing " << s << endl;
-				if (s.find("bowker") != string::npos)
+				if (optarg[0] == '-') {
+					optind--;
+					options->writeExtendedTestResults = true;
 					options->writeBowkerFile = true;
-				if (s.find("stuart") != string::npos)
 					options->writeStuartFile = true;
-				if (s.find("ababneh") != string::npos)
 					options->writeAbabnehFile = true;
-				if (s.find("aitchison") != string::npos)
 					options->writeAitchisonFile= true;
-				if (s.find("delta_s") != string::npos)
 					options->writeDelta_sFile = true;
-				if (s.find("delta_ms") != string::npos)
 					options->writeDelta_msFile = true;
+				} else {
+					string s(optarg);
+					transform(s.begin(), s.end(), s.begin(), ::tolower);
+					cout << "Parsing " << s << endl;
+					if (s.find("bowker") != string::npos)
+						options->writeBowkerFile = true;
+					if (s.find("stuart") != string::npos)
+						options->writeStuartFile = true;
+					if (s.find("ababneh") != string::npos)
+						options->writeAbabnehFile = true;
+					if (s.find("aitchison") != string::npos)
+						options->writeAitchisonFile= true;
+					if (s.find("delta_s") != string::npos)
+						options->writeDelta_sFile = true;
+					if (s.find("delta_ms") != string::npos)
+						options->writeDelta_msFile = true;
+				}
 				break;
 			}
 			case 'w':
@@ -161,12 +172,18 @@ int parseArguments(int argc, char** argv, Options *options)
 				break;
 #endif
 			case 'v':
-				verbose = atoi(optarg);
+				if (optarg[0] == '-') {
+					verbose = 1;
+					optind--;
+				} else {
+					verbose = atoi(optarg);
+				}
 				break;
 			case 'h':
 				options->help = 1;
 				break;
 			case ':':
+				cout << "OptOpt: " << (char) optopt << endl;
 				if (optopt == 'x') {
 					options->writeExtendedTestResults = true;
 					options->writeBowkerFile = true;
@@ -281,7 +298,7 @@ void printSyntax()
     cout << "                 Optional: restrict to files in LIST (comma-separated)" << endl;
     cout << "                 Available: bowker, stuart, ababneh, aitchison, delta_s, delta_ms" << endl;
     cout << endl;
-    cout << "  -v<n5>         Be increasingly verbose [n5 = 0|1|2]" << endl;
+    cout << "  -v[n5]         Be increasingly verbose [n5 = 0|1|2]" << endl;
 #ifdef _OPENMP
     cout << "  -n<n6>         Number of threads [default: " << omp_get_max_threads() << "]" << endl;
 #endif
