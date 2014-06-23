@@ -38,7 +38,8 @@ private:
 	vector< vector<double> > _stuart;
 	vector< vector<double> > _pStuart;
 	vector< vector<double> > _pAbabneh;
-	vector< vector<double> > _aitchison;
+	vector< vector<double> > _aitchisonMarg;
+	vector< vector<double> > _aitchisonFull;
 	vector< vector<double> > _ds;
 	vector< vector<double> > _dms;
 };

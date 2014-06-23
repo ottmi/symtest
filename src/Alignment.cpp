@@ -103,7 +103,8 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 		vector<double> stuartList;
 		vector<double> pStuartList;
 		vector<double> pAbabnehList;
-		vector<double> aitchisonList;
+		vector<double> aitchisonMargList;
+		vector<double> aitchisonFullList;
 
 		for (unsigned int k = 0; k < len; k++) { // 1st sequence
 			Sequence s1 = _alignment[k];
@@ -233,25 +234,67 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 					else
 						pAbabnehList.push_back(1.0);
 				}
-			}
-		}
 
-		for (unsigned int k = 0; k < len; k++) // 1st sequence
-			for (unsigned int l = k + 1; l < len; l++) // 2nd sequence
-					{
-				double aitchison = .0;
-				for (unsigned int i = 0; i < _dim; i++) {
-					double x_i = baseFrequencies[k][i];
-					double y_i = baseFrequencies[l][i];
-					for (unsigned int j = 0; j < _dim; j++) {
-						double x_j = baseFrequencies[k][j];
-						double y_j = baseFrequencies[l][j];
-						double logDiff = log(x_i / x_j) - log(y_i / y_j);
-						aitchison += (logDiff * logDiff) / (2 * _dim);
+				double prior = 1.0;
+				double aitchisonMarg = 0.0;
+				int c = 0;
+				for (int i = 0; i < _dim; i++) {
+					double x_i = n.getRowSum(i);
+					double y_i = n.getColSum(i);
+					if (verbose) {
+						cout << "rowSum[" << i << "]=" << x_i << " colSum[" << i << "]=" << y_i << endl;
+					}
+
+					if (x_i > 0 && y_i > 0) {
+						c++;
+						x_i+= prior;
+						y_i+= prior;
+						for (int j = 0; j < _dim; j++) {
+							double x_j = n.getRowSum(j) + prior;
+							double y_j = n.getColSum(j) + prior;
+							double logDiff = log(x_i / x_j) - log(y_i / y_j);
+							aitchisonMarg += (logDiff * logDiff);
+						}
 					}
 				}
-				aitchisonList.push_back(aitchison);
+				aitchisonMarg = sqrt(aitchisonMarg / (2 * c));
+				aitchisonMargList.push_back(aitchisonMarg);
+
+				double aitchisonFull = 0.0;
+				c = 0;
+				for (int g = 0; g < _dim; g++) {
+					for (int h = g+1; h < _dim; h++) {
+						double y_i = n(g, h);
+						double z_i = n(h, g);
+						if (y_i > 0 && z_i > 0) {
+							if (verbose) {
+								cout << "y[" << c << "]=" << y_i << " z[" << c << "]=" << z_i << endl;
+							}
+							y_i+= prior;
+							z_i+= prior;
+							int d = 0;
+							for (int i = 0; i < _dim; i++) {
+								for (int j = i+1; j < _dim; j++) {
+									double y_j = n(i, j);
+									double z_j = n(j, i);
+									if (verbose) {
+										cout << "  y[" << d << "]=" << y_j << " z[" << d << "]=" << z_j << endl;
+									}
+									y_j+= prior;
+									z_j+= prior;
+									double logDiff = log(y_i / y_j) - log(z_i / z_j);
+									aitchisonFull += (logDiff * logDiff);
+									d++;
+								}
+							}
+							c++;
+						}
+					}
+				}
+				aitchisonFull = sqrt(aitchisonFull / (2 * c));
+				aitchisonFullList.push_back(aitchisonFull);
 			}
+		}
 
 		_df.push_back(dfList);
 		_bowker.push_back(bowkerList);
@@ -261,7 +304,8 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 		_stuart.push_back(stuartList);
 		_pStuart.push_back(pStuartList);
 		_pAbabneh.push_back(pAbabnehList);
-		_aitchison.push_back(aitchisonList);
+		_aitchisonMarg.push_back(aitchisonMargList);
+		_aitchisonFull.push_back(aitchisonFullList);
 	}
 }
 
@@ -286,7 +330,8 @@ void Alignment::writeResults(Options* options) {
 	resultsFile << "\tBowker (B)\tdf_B\tp_B";
 	resultsFile << "\tStuart (S)\tdf_S\tp_S";
 	resultsFile << "\tAbabneh (A)\tdf_A\tp_A";
-	resultsFile << "\tAitchison\tDelta_s\tDelta_ms";
+	resultsFile << "\tAitchisonMarg\tAitchisonFull";
+	resultsFile << "\tDelta_s\tDelta_ms";
 	resultsFile << "\tStart\tEnd" << endl;
 
 	unsigned int i = 0;
@@ -318,7 +363,9 @@ void Alignment::writeResults(Options* options) {
 					resultsFile << "\t" << ababneh << "\t" << dfA << "\t" << _pAbabneh[i][j];
 				}
 
-				resultsFile << "\t" << _aitchison[i][j] << "\t" << _ds[i][j] << "\t" << _dms[i][j];
+				resultsFile << "\t" << _aitchisonMarg[i][j] << "\t" << _aitchisonFull[i][j];
+
+				resultsFile << "\t" << _ds[i][j] << "\t" << _dms[i][j];
 
 				resultsFile << "\t" << windowStart << "\t" << windowEnd - 1 << endl;
 
@@ -394,17 +441,19 @@ void Alignment::writeResults(Options* options) {
 		cout << endl;
 		cout << "Writing extended results to:" << endl;
 		if (options->writeBowkerFile)
-			writeExtendedResult("Bowker\'s test", options->prefix+".bowker.", "csv", windowSize, windowStep, _pBowker);
+			writeExtendedResult("Bowker\'s test             ", options->prefix+".bowker.", "csv", windowSize, windowStep, _pBowker);
 		if (options->writeStuartFile)
-			writeExtendedResult("Stuart\'s test", options->prefix+".stuart.", "csv", windowSize, windowStep, _pStuart);
+			writeExtendedResult("Stuart\'s test             ", options->prefix+".stuart.", "csv", windowSize, windowStep, _pStuart);
 		if (options->writeAbabnehFile)
-			writeExtendedResult("Ababneh\'s test", options->prefix+".ababneh.", "csv", windowSize, windowStep, _pAbabneh);
-		if (options->writeAitchisonFile)
-			writeExtendedResult("Aitchison\'s distance matrix", options->prefix+".aitchison.", "dis", windowSize, windowStep, _aitchison);
+			writeExtendedResult("Ababneh\'s test            ", options->prefix+".ababneh.", "csv", windowSize, windowStep, _pAbabneh);
+		if (options->writeAitchisonFile) {
+			writeExtendedResult("Aitchison\'s marg distances", options->prefix+".aitchisonMarg.", "dis", windowSize, windowStep, _aitchisonMarg);
+			writeExtendedResult("Aitchison\'s distances     ", options->prefix+".aitchisonFull.", "dis", windowSize, windowStep, _aitchisonFull);
+		}
 		if (options->writeDelta_sFile)
-			writeExtendedResult("delta_s distance matrix", options->prefix+".delta_s.", "dis", windowSize, windowStep, _ds);
+			writeExtendedResult("delta_s distance matrix   ", options->prefix+".delta_s.", "dis", windowSize, windowStep, _ds);
 		if (options->writeDelta_msFile)
-			writeExtendedResult("delta_ms distance matrix", options->prefix+".delta_ms.", "dis", windowSize, windowStep, _dms);
+			writeExtendedResult("delta_ms distance matrix  ", options->prefix+".delta_ms.", "dis", windowSize, windowStep, _dms);
 	}
 
 }
@@ -415,10 +464,10 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 	string outFileName;
 	cout.flags(ios::left);
 	if (windowSize < (int) _cols) {
-		cout << "  " << setw(29) << title + ":" << baseName << "<window>." << ext << endl;
+		cout << "  " << setw(29) << title << baseName << "<window>." << ext << endl;
 	} else {
 		outFileName = baseName + ext;
-		cout << "  " << setw(29) << title + ":" << outFileName << endl;
+		cout << "  " << setw(29) << title << outFileName << endl;
 	}
 
 	unsigned int len = _alignment.size();
