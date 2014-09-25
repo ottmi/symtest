@@ -326,13 +326,14 @@ void Alignment::writeResults(Options* options) {
 	if (windowStep <= 0)
 		windowStep = windowSize;
 
-	resultsFile << "Seq1\tSeq2";
-	resultsFile << "\tBowker (B)\tdf_B\tp_B";
-	resultsFile << "\tStuart (S)\tdf_S\tp_S";
-	resultsFile << "\tAbabneh (A)\tdf_A\tp_A";
-	resultsFile << "\tAitchisonMarg\tAitchisonFull";
-	resultsFile << "\tDelta_s\tDelta_ms";
-	resultsFile << "\tStart\tEnd" << endl;
+	resultsFile << "Seq1" << CSV_SEPARATOR;
+	resultsFile << "Seq2" << CSV_SEPARATOR;
+	resultsFile << "Bowker (B)" << CSV_SEPARATOR << "df_B" << CSV_SEPARATOR << "p_B" << CSV_SEPARATOR;
+	resultsFile << "Stuart (S)" << CSV_SEPARATOR << "df_S" << CSV_SEPARATOR << "p_S" << CSV_SEPARATOR;
+	resultsFile << "Ababneh (A)" << CSV_SEPARATOR << "df_A" << CSV_SEPARATOR << "p_A" << CSV_SEPARATOR;
+	resultsFile << "AitchisonMarg" << CSV_SEPARATOR << "AitchisonFull" << CSV_SEPARATOR;
+	resultsFile << "Delta_s" << CSV_SEPARATOR << "Delta_ms" << CSV_SEPARATOR;
+	resultsFile << "Start" << CSV_SEPARATOR << "End" << endl;
 
 	unsigned int i = 0;
 	for (unsigned int windowStart = 0; windowStart < _cols; windowStart += windowStep) {
@@ -346,28 +347,28 @@ void Alignment::writeResults(Options* options) {
 		for (unsigned int k = 0; k < len; k++)
 			for (unsigned int l = k + 1; l < len; l++) {
 
-				resultsFile << _alignment[k].getName() << "\t" << _alignment[l].getName() << scientific;
+				resultsFile << _alignment[k].getName() << CSV_SEPARATOR << _alignment[l].getName() << scientific;
 
 				unsigned int dfB = _df[i][j];
-				resultsFile << "\t" << _bowker[i][j] << "\t" << dfB << "\t" << _pBowker[i][j];
+				resultsFile << CSV_SEPARATOR << _bowker[i][j] << CSV_SEPARATOR << dfB << CSV_SEPARATOR << _pBowker[i][j];
 
 				unsigned int dfS = _dim - 1;
 				unsigned int dfA = dfB - dfS;
 				if (_stuart[i][j] != _stuart[i][j]) { // NaN
-					resultsFile << "\t" << "n/a" << "\t" << "n/a" << "\t" << "n/a";
-					resultsFile << "\t" << "n/a" << "\t" << "n/a" << "\t" << "n/a";
+					resultsFile << CSV_SEPARATOR << "n/a" << CSV_SEPARATOR << "n/a" << CSV_SEPARATOR << "n/a";
+					resultsFile << CSV_SEPARATOR << "n/a" << CSV_SEPARATOR << "n/a" << CSV_SEPARATOR << "n/a";
 				} else {
-					resultsFile << "\t" << _stuart[i][j] << "\t" << dfS << "\t" << _pStuart[i][j];
+					resultsFile << CSV_SEPARATOR << _stuart[i][j] << CSV_SEPARATOR << dfS << CSV_SEPARATOR << _pStuart[i][j];
 
 					double ababneh = _bowker[i][j] - _stuart[i][j];
-					resultsFile << "\t" << ababneh << "\t" << dfA << "\t" << _pAbabneh[i][j];
+					resultsFile << CSV_SEPARATOR << ababneh << CSV_SEPARATOR << dfA << CSV_SEPARATOR << _pAbabneh[i][j];
 				}
 
-				resultsFile << "\t" << _aitchisonMarg[i][j] << "\t" << _aitchisonFull[i][j];
+				resultsFile << CSV_SEPARATOR << _aitchisonMarg[i][j] << CSV_SEPARATOR << _aitchisonFull[i][j];
 
-				resultsFile << "\t" << _ds[i][j] << "\t" << _dms[i][j];
+				resultsFile << CSV_SEPARATOR << _ds[i][j] << CSV_SEPARATOR << _dms[i][j];
 
-				resultsFile << "\t" << windowStart << "\t" << windowEnd - 1 << endl;
+				resultsFile << CSV_SEPARATOR << windowStart << CSV_SEPARATOR << windowEnd - 1 << endl;
 
 				if (_pBowker[i][j] < minP)
 					minP = _pBowker[i][j];
@@ -489,7 +490,7 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 
 		outFile.flags(ios::left);
 		for (unsigned int l = 0; l < len; l++) {
-			outFile << "\t" << setw(12) << _alignment[l].getName();
+			outFile << CSV_SEPARATOR << setw(12) << _alignment[l].getName();
 		}
 		outFile << endl;
 
@@ -500,7 +501,7 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 			outFile.flags(ios::right);
 			for (unsigned int l = 0; l < len; l++) {
 				if (k == l) {
-					outFile << "\t0";
+					outFile << CSV_SEPARATOR << "0";
 				} else {
 					int m;
 					if (k < l)
@@ -509,9 +510,9 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 						m = l * (len - 1) - (l - 1) * l / 2 + k - l - 1;
 
 					if (matrix[i][m] != matrix[i][m]) { // NaN
-						outFile << "\t" << "n/a";
+						outFile << CSV_SEPARATOR << "n/a";
 					} else {
-						outFile << "\t" << scientific << matrix[i][m];
+						outFile << CSV_SEPARATOR << scientific << matrix[i][m];
 					}
 				}
 			}

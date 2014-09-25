@@ -7,7 +7,7 @@
 using namespace std;
 
 #define PROGNAME "symtest"
-#define VERSION "2.0.29"
+#define VERSION "2.0.30"
 #define PROGDATE "2014-09-25"
 
 #define _DNA_DATA	0
@@ -24,6 +24,8 @@ using namespace std;
 
 #define	_FASTA_FORMAT	0
 #define	_PHYLIP_FORMAT	1
+
+#define CSV_SEPARATOR ","
 
 extern int verbose;
 
