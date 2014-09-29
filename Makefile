@@ -4,7 +4,7 @@ LDFLAGS =
 LIBS = -lm
 
 VERSION := $(shell awk '/VERSION/ {print $$3}' src/globals.h| sed 's/\"\(.*\)\"/\1/')
-MODULES := Alignment.cpp AlignmentReader.cpp Matrix.cpp Sequence.cpp helper.cpp symtest.cpp
+MODULES := Alignment.cpp AlignmentReader.cpp Matrix.cpp Sequence.cpp chi.cpp helper.cpp symtest.cpp
 SRC := $(addprefix src/,$(MODULES))
 OBJ := $(patsubst src/%.cpp,src/%.o,$(SRC))
 INCLUDES := $(addprefix -I,$(SRC_DIR))
