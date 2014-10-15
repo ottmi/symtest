@@ -319,8 +319,8 @@ void Alignment::writeResults(Options* options) {
 	resultsFile << "Bowker (B)" << CSV_SEPARATOR << "df_B" << CSV_SEPARATOR << "p_B" << CSV_SEPARATOR;
 	resultsFile << "Stuart (S)" << CSV_SEPARATOR << "df_S" << CSV_SEPARATOR << "p_S" << CSV_SEPARATOR;
 	resultsFile << "Ababneh (A)" << CSV_SEPARATOR << "df_A" << CSV_SEPARATOR << "p_A" << CSV_SEPARATOR;
-	resultsFile << "AitchisonMarg" << CSV_SEPARATOR << "AitchisonFull" << CSV_SEPARATOR;
-	resultsFile << "Delta_s" << CSV_SEPARATOR << "Delta_ms" << CSV_SEPARATOR;
+	resultsFile << "d_EMS" << CSV_SEPARATOR << "d_EFS" << CSV_SEPARATOR;
+	resultsFile << "d_AMS" << CSV_SEPARATOR << "d_AFS" << CSV_SEPARATOR;
 	resultsFile << "Start" << CSV_SEPARATOR << "End" << endl;
 
 	unsigned int i = 0;
@@ -352,9 +352,9 @@ void Alignment::writeResults(Options* options) {
 					resultsFile << CSV_SEPARATOR << ababneh << CSV_SEPARATOR << dfA << CSV_SEPARATOR << _pAbabneh[i][j];
 				}
 
-				resultsFile << CSV_SEPARATOR << _aitchisonMarg[i][j] << CSV_SEPARATOR << _aitchisonFull[i][j];
+				resultsFile << CSV_SEPARATOR << _dms[i][j] << CSV_SEPARATOR << _ds[i][j];
 
-				resultsFile << CSV_SEPARATOR << _ds[i][j] << CSV_SEPARATOR << _dms[i][j];
+				resultsFile << CSV_SEPARATOR << _aitchisonMarg[i][j] << CSV_SEPARATOR << _aitchisonFull[i][j];
 
 				resultsFile << CSV_SEPARATOR << windowStart << CSV_SEPARATOR << windowEnd - 1 << endl;
 
