@@ -478,14 +478,14 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 
 		outFile.flags(ios::left);
 		for (unsigned int l = 0; l < len; l++) {
-			outFile << CSV_SEPARATOR << setw(12) << _alignment[l].getName();
+			outFile << CSV_SEPARATOR << _alignment[l].getName();
 		}
 		outFile << endl;
 
 
 		for (unsigned int k = 0; k < len; k++) {
 			outFile.flags(ios::left);
-			outFile << setw(12) << _alignment[k].getName();
+			outFile << _alignment[k].getName();
 			outFile.flags(ios::right);
 			for (unsigned int l = 0; l < len; l++) {
 				if (k == l) {
