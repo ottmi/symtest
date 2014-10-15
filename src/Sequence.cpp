@@ -49,7 +49,7 @@ string Sequence::getColumns(vector<int> cols)
 	return s;
 }
 
-unsigned int Sequence::getNumerical(int pos)
+unsigned int Sequence::getNumerical(unsigned int pos)
 {
 	if (pos < _numericSeq.size())
 		return _numericSeq[pos];
@@ -60,9 +60,9 @@ unsigned int Sequence::getNumerical(int pos)
 
 bool Sequence::charIsUnambiguous(unsigned int n)
 {
-	for (unsigned int i = 0; i < _groupSize; i++)
+	for (int i = 0; i < _groupSize; i++)
 	{
-		if ((n & 255) > _unambiguousThreshold) return false;
+		if ((int) (n & 255) > _unambiguousThreshold) return false;
 		n = n >> 8;
 	}
 	return true;

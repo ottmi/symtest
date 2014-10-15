@@ -331,7 +331,7 @@ string mapNumToChar(unsigned int n, int dataType, int groupSize)
 	else
 		map = _ALPHANUM_MAP;
 
-	for (unsigned int i = 0; i < groupSize; i++)
+	for (int i = 0; i < groupSize; i++)
 	{
 		s = map[n & 255] + s;
 		n = n >> 8;

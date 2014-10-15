@@ -121,7 +121,7 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 			if (verbose)
 				cout << "baseFreq[" << k << "]:";
 			vector<double> baseFreq(_dim);
-			for (unsigned int c = 0; c < _dim; c++) {
+			for (int c = 0; c < _dim; c++) {
 				baseFreq[c] = ((double) baseOccurences[c] + (1.0 / _dim)) / (windowSize + 1);
 				if (verbose)
 					cout << baseFreq[c] << " ";
@@ -135,7 +135,6 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 				unsigned int sum = 0;
 				map<pair<unsigned int, unsigned int>, unsigned int> nmap;
 				map<pair<unsigned int, unsigned int>, unsigned int>::iterator it;
-				unsigned long id;
 				unsigned int windowEnd = windowStart + windowSize;
 				if (windowEnd > _cols)
 					windowEnd = _cols;
@@ -189,8 +188,8 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 				dmsList.push_back(sqrt(deltaMs) / sqrt(2.0));
 
 				Matrix V(_dim - 1);
-				for (unsigned int i = 0; i < _dim - 1; i++)
-					for (unsigned int j = 0; j < _dim - 1; j++)
+				for (int i = 0; i < _dim - 1; i++)
+					for (int j = 0; j < _dim - 1; j++)
 						if (i == j)
 							V(i, j) = n.getRowSum(i) + n.getColSum(i) - 2 * n(i, i);
 						else
@@ -198,9 +197,9 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 				double stuart = 0;
 				try {
 					V.inverse();
-					for (unsigned int i = 0; i < _dim - 1; i++) {
+					for (int i = 0; i < _dim - 1; i++) {
 						double d_i = n.getRowSum(i) - n.getColSum(i);
-						for (unsigned int j = 0; j < _dim - 1; j++) {
+						for (int j = 0; j < _dim - 1; j++) {
 							double d_j = n.getRowSum(j) - n.getColSum(j);
 							stuart += V(i, j) * d_i * d_j;
 						}
@@ -453,7 +452,7 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 	ofstream outFile;
 	string outFileName;
 	cout.flags(ios::left);
-	if (windowSize < (int) _cols) {
+	if (windowSize < _cols) {
 		cout << "  " << setw(29) << title << baseName << "<window>." << ext << endl;
 	} else {
 		outFileName = baseName + ext;
@@ -463,7 +462,7 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 	unsigned int len = _alignment.size();
 	unsigned int i = 0;
 	for (unsigned int windowStart = 0; windowStart < _cols; windowStart += windowStep) {
-		if (windowSize < (int) _cols) {
+		if (windowSize <  _cols) {
 			unsigned int windowEnd = windowStart + windowSize - 1;
 			if (windowEnd > _cols - 1)
 				windowEnd = _cols - 1;

@@ -16,7 +16,7 @@ public:
 	string& getLongName() { return _longName; };
 	string& getSequence() { return _sequence; };
 	string getColumns(vector<int> cols);
-	unsigned int getNumerical(int pos);
+	unsigned int getNumerical(unsigned int pos);
 	size_t getLength() { return _sequence.length(); };
 	bool charIsUnambiguous(unsigned int n);
 private:
