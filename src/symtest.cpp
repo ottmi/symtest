@@ -183,7 +183,6 @@ int parseArguments(int argc, char** argv, Options *options)
 				options->help = 1;
 				break;
 			case ':':
-				cout << "OptOpt: " << (char) optopt << endl;
 				if (optopt == 'x') {
 					options->writeExtendedTestResults = true;
 					options->writeBowkerFile = true;
