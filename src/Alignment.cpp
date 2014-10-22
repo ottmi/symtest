@@ -435,14 +435,14 @@ void Alignment::writeResults(Options* options) {
 			writeExtendedResult("Stuart\'s test             ", options->prefix+".stuart.", "csv", windowSize, windowStep, _pStuart);
 		if (options->writeAbabnehFile)
 			writeExtendedResult("Ababneh\'s test            ", options->prefix+".ababneh.", "csv", windowSize, windowStep, _pAbabneh);
-		if (options->writeAitchisonFile) {
-			writeExtendedResult("Aitchison\'s marg distances", options->prefix+".aitchisonMarg.", "dis", windowSize, windowStep, _aitchisonMarg);
-			writeExtendedResult("Aitchison\'s distances     ", options->prefix+".aitchisonFull.", "dis", windowSize, windowStep, _aitchisonFull);
-		}
-		if (options->writeDelta_sFile)
-			writeExtendedResult("delta_s distance matrix   ", options->prefix+".delta_s.", "dis", windowSize, windowStep, _ds);
-		if (options->writeDelta_msFile)
-			writeExtendedResult("delta_ms distance matrix  ", options->prefix+".delta_ms.", "dis", windowSize, windowStep, _dms);
+		if (options->writeD_AmsFile)
+			writeExtendedResult("Aitchison\'s marg distances", options->prefix+".d_AMS.", "dis", windowSize, windowStep, _aitchisonMarg);
+		if (options->writeD_AfsFile)
+			writeExtendedResult("Aitchison\'s distances     ", options->prefix+".d_AFS.", "dis", windowSize, windowStep, _aitchisonFull);
+		if (options->writeD_EmsFile)
+			writeExtendedResult("delta_ms distance matrix  ", options->prefix+".d_EFS.", "dis", windowSize, windowStep, _dms);
+		if (options->writeD_EfsFile)
+			writeExtendedResult("delta_s distance matrix   ", options->prefix+".d_EMS.", "dis", windowSize, windowStep, _ds);
 	}
 
 }

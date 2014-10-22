@@ -37,9 +37,10 @@ int parseArguments(int argc, char** argv, Options *options)
 	options->writeBowkerFile = false;
 	options->writeStuartFile = false;
 	options->writeAbabnehFile = false;
-	options->writeAitchisonFile = false;
-	options->writeDelta_sFile = false;
-	options->writeDelta_msFile = false;
+	options->writeD_AmsFile = false;
+	options->writeD_AfsFile = false;
+	options->writeD_EmsFile = false;
+	options->writeD_EfsFile = false;
 	options->windowSize = -1;
 	options->windowStep = -1;
 	options->columnFrom = -1;
@@ -132,9 +133,10 @@ int parseArguments(int argc, char** argv, Options *options)
 					options->writeBowkerFile = true;
 					options->writeStuartFile = true;
 					options->writeAbabnehFile = true;
-					options->writeAitchisonFile= true;
-					options->writeDelta_sFile = true;
-					options->writeDelta_msFile = true;
+					options->writeD_AmsFile= true;
+					options->writeD_AfsFile= true;
+					options->writeD_EmsFile = true;
+					options->writeD_EfsFile = true;
 				} else {
 					string s(optarg);
 					transform(s.begin(), s.end(), s.begin(), ::tolower);
@@ -145,12 +147,14 @@ int parseArguments(int argc, char** argv, Options *options)
 						options->writeStuartFile = true;
 					if (s.find("ababneh") != string::npos)
 						options->writeAbabnehFile = true;
-					if (s.find("aitchison") != string::npos)
-						options->writeAitchisonFile= true;
-					if (s.find("delta_s") != string::npos)
-						options->writeDelta_sFile = true;
-					if (s.find("delta_ms") != string::npos)
-						options->writeDelta_msFile = true;
+					if (s.find("afs") != string::npos)
+						options->writeD_AfsFile= true;
+					if (s.find("ams") != string::npos)
+						options->writeD_AmsFile= true;
+					if (s.find("efs") != string::npos)
+						options->writeD_EfsFile = true;
+					if (s.find("ems") != string::npos)
+						options->writeD_EmsFile = true;
 				}
 				break;
 			}
@@ -188,9 +192,10 @@ int parseArguments(int argc, char** argv, Options *options)
 					options->writeBowkerFile = true;
 					options->writeStuartFile = true;
 					options->writeAbabnehFile = true;
-					options->writeAitchisonFile= true;
-					options->writeDelta_sFile = true;
-					options->writeDelta_msFile = true;
+					options->writeD_AmsFile = true;
+					options->writeD_AfsFile= true;
+					options->writeD_EmsFile = true;
+					options->writeD_EfsFile = true;
 				} else if (optopt == 'v') {
 					verbose = 1;
 				} else {
@@ -295,7 +300,7 @@ void printSyntax()
     cout << "                       1,2,3  for triplets comprising 1st, 2nd, and 3rd position" << endl;
     cout << "  -x[LIST]       Write extended output files [default: all available]" << endl;
     cout << "                 Optional: restrict to files in LIST (comma-separated)" << endl;
-    cout << "                 Available: bowker, stuart, ababneh, aitchison, delta_s, delta_ms" << endl;
+    cout << "                 Available: bowker, stuart, ababneh, AMS, AFS, EMS, EFS" << endl;
     cout << endl;
     cout << "  -v[n5]         Be increasingly verbose [n5 = 0|1|2]" << endl;
 #ifdef _OPENMP

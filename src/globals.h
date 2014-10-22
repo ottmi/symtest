@@ -7,8 +7,8 @@
 using namespace std;
 
 #define PROGNAME "symtest"
-#define VERSION "2.0.35"
-#define PROGDATE "2014-10-15"
+#define VERSION "2.0.36"
+#define PROGDATE "2014-10-22"
 
 #define _DNA_DATA	0
 #define	_AA_DATA	1
@@ -43,9 +43,10 @@ typedef struct opt_struct
     bool writeBowkerFile;
     bool writeStuartFile;
     bool writeAbabnehFile;
-    bool writeAitchisonFile;
-    bool writeDelta_sFile;
-    bool writeDelta_msFile;
+    bool writeD_AmsFile;
+    bool writeD_AfsFile;
+    bool writeD_EmsFile;
+    bool writeD_EfsFile;
     int windowSize;
     int windowStep;
     int help;
