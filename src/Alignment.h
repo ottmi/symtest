@@ -21,6 +21,7 @@ public:
 
 	void writeResults(Options* options);
 	void writeExtendedResult(string title, string baseName, string ext, unsigned int windowSize, unsigned int windowStep, vector< vector<double> >& matrix);
+	void writeExtendedDistances(string title, string baseName, string ext, unsigned int windowSize, unsigned int windowStep, vector< vector<double> >& matrix);
 
 	unsigned int getNumOfRows() { return _alignment.size(); };
 	unsigned int getNumOfCols() { return _cols; };

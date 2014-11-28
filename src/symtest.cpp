@@ -37,10 +37,10 @@ int parseArguments(int argc, char** argv, Options *options)
 	options->writeBowkerFile = false;
 	options->writeStuartFile = false;
 	options->writeAbabnehFile = false;
-	options->writeD_AmsFile = false;
-	options->writeD_AfsFile = false;
-	options->writeD_EmsFile = false;
-	options->writeD_EfsFile = false;
+	options->writeAmsFile = false;
+	options->writeAfsFile = false;
+	options->writeEmsFile = false;
+	options->writeEfsFile = false;
 	options->windowSize = -1;
 	options->windowStep = -1;
 	options->columnFrom = -1;
@@ -133,10 +133,10 @@ int parseArguments(int argc, char** argv, Options *options)
 					options->writeBowkerFile = true;
 					options->writeStuartFile = true;
 					options->writeAbabnehFile = true;
-					options->writeD_AmsFile= true;
-					options->writeD_AfsFile= true;
-					options->writeD_EmsFile = true;
-					options->writeD_EfsFile = true;
+					options->writeAmsFile= true;
+					options->writeAfsFile= true;
+					options->writeEmsFile = true;
+					options->writeEfsFile = true;
 				} else {
 					string s(optarg);
 					transform(s.begin(), s.end(), s.begin(), ::tolower);
@@ -148,13 +148,13 @@ int parseArguments(int argc, char** argv, Options *options)
 					if (s.find("ababneh") != string::npos)
 						options->writeAbabnehFile = true;
 					if (s.find("afs") != string::npos)
-						options->writeD_AfsFile= true;
+						options->writeAfsFile= true;
 					if (s.find("ams") != string::npos)
-						options->writeD_AmsFile= true;
+						options->writeAmsFile= true;
 					if (s.find("efs") != string::npos)
-						options->writeD_EfsFile = true;
+						options->writeEfsFile = true;
 					if (s.find("ems") != string::npos)
-						options->writeD_EmsFile = true;
+						options->writeEmsFile = true;
 				}
 				break;
 			}
@@ -192,10 +192,10 @@ int parseArguments(int argc, char** argv, Options *options)
 					options->writeBowkerFile = true;
 					options->writeStuartFile = true;
 					options->writeAbabnehFile = true;
-					options->writeD_AmsFile = true;
-					options->writeD_AfsFile= true;
-					options->writeD_EmsFile = true;
-					options->writeD_EfsFile = true;
+					options->writeAmsFile = true;
+					options->writeAfsFile= true;
+					options->writeEmsFile = true;
+					options->writeEfsFile = true;
 				} else if (optopt == 'v') {
 					verbose = 1;
 				} else {

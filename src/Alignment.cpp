@@ -211,7 +211,10 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 				}
 
 				stuartList.push_back(stuart);
-				pBowkerList.push_back(xChi_Square_Distribution_Tail(bowker, df));
+				if (df > 0)
+				    pBowkerList.push_back(xChi_Square_Distribution_Tail(bowker, df));
+				else
+				    pBowkerList.push_back(1.0);
 
 				unsigned int dfS = _dim - 1;
 				unsigned int dfA = df - dfS;
@@ -219,8 +222,15 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 					pStuartList.push_back(numeric_limits<double>::quiet_NaN());
 					pAbabnehList.push_back(numeric_limits<double>::quiet_NaN());
 				} else {
+				    if (dfS > 0)
 					pStuartList.push_back(xChi_Square_Distribution_Tail(stuart, dfS));
+				    else
+					pStuartList.push_back(1.0);
+
+				    if (dfA > 0)
 					pAbabnehList.push_back(xChi_Square_Distribution_Tail(bowker - stuart, dfA));
+				    else
+					pAbabnehList.push_back(1.0);
 				}
 
 				double prior = 1.0;
@@ -428,21 +438,22 @@ void Alignment::writeResults(Options* options) {
 
 	if (options->writeExtendedTestResults) {
 		cout << endl;
-		cout << "Writing extended results to:" << endl;
+		cout << "Writing extended results/distances to:" << endl;
 		if (options->writeBowkerFile)
 			writeExtendedResult("Bowker\'s test             ", options->prefix+".bowker.", "csv", windowSize, windowStep, _pBowker);
 		if (options->writeStuartFile)
 			writeExtendedResult("Stuart\'s test             ", options->prefix+".stuart.", "csv", windowSize, windowStep, _pStuart);
 		if (options->writeAbabnehFile)
 			writeExtendedResult("Ababneh\'s test            ", options->prefix+".ababneh.", "csv", windowSize, windowStep, _pAbabneh);
-		if (options->writeD_AmsFile)
-			writeExtendedResult("Aitchison\'s marg distances", options->prefix+".d_AMS.", "dis", windowSize, windowStep, _aitchisonMarg);
-		if (options->writeD_AfsFile)
-			writeExtendedResult("Aitchison\'s distances     ", options->prefix+".d_AFS.", "dis", windowSize, windowStep, _aitchisonFull);
-		if (options->writeD_EmsFile)
-			writeExtendedResult("delta_ms distance matrix  ", options->prefix+".d_EFS.", "dis", windowSize, windowStep, _dms);
-		if (options->writeD_EfsFile)
-			writeExtendedResult("delta_s distance matrix   ", options->prefix+".d_EMS.", "dis", windowSize, windowStep, _ds);
+			
+		if (options->writeAmsFile)
+			writeExtendedDistances("Aitchison\'s distances (marg)", options->prefix+".AMS.", "dst", windowSize, windowStep, _aitchisonMarg);
+		if (options->writeAfsFile)
+			writeExtendedDistances("Aitchison\'s distances (full)", options->prefix+".AFS.", "dst", windowSize, windowStep, _aitchisonFull);
+		if (options->writeEmsFile)
+			writeExtendedDistances("Euclidian distances (marg)   ", options->prefix+".EMS.", "dst", windowSize, windowStep, _dms);
+		if (options->writeEfsFile)
+			writeExtendedDistances("Euclidian distances (full)   ", options->prefix+".EFS.", "dst", windowSize, windowStep, _ds);
 	}
 
 }
@@ -503,6 +514,72 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 						outFile << CSV_SEPARATOR << scientific << matrix[i][m];
 					}
 				}
+			}
+			outFile << endl;
+		}
+		outFile.close();
+		i++;
+	}
+}
+
+void Alignment::writeExtendedDistances(string title, string baseName, string ext, unsigned int windowSize, unsigned int windowStep, vector< vector<double> >& matrix)
+{
+	ofstream outFile;
+	string outFileName;
+	cout.flags(ios::left);
+	if (windowSize < _cols) {
+		cout << "  " << setw(29) << title << baseName << "<window>." << ext << endl;
+	} else {
+		outFileName = baseName + ext;
+		cout << "  " << setw(29) << title << outFileName << endl;
+	}
+
+	unsigned int len = _alignment.size();
+	unsigned int i = 0;
+	for (unsigned int windowStart = 0; windowStart < _cols; windowStart += windowStep) {
+		if (windowSize <  _cols) {
+			unsigned int windowEnd = windowStart + windowSize - 1;
+			if (windowEnd > _cols - 1)
+				windowEnd = _cols - 1;
+
+			stringstream ss;
+			ss << windowStart << "-" << windowEnd << ".";
+			outFileName = baseName + ss.str() + ext;
+		}
+
+		outFile.open(outFileName.c_str(), ifstream::trunc);
+		if (!outFile.is_open())
+			throw("Error, cannot open file " + outFileName);
+
+		outFile.flags(ios::left);
+		outFile << len << endl;
+
+		for (unsigned int k = 0; k < len; k++) {
+			string name = _alignment[k].getName();
+			if (name.length() >= 10)
+				outFile << name << " ";
+			else
+				outFile << setw(10) << left << name;
+			
+			outFile << right;
+			for (unsigned int l = 0; l < len; l++) {
+				if (k == l) {
+					outFile << "0";
+				} else {
+					int m;
+					if (k < l)
+						m = k * (len - 1) - (k - 1) * k / 2 + l - k - 1;
+					else
+						m = l * (len - 1) - (l - 1) * l / 2 + k - l - 1;
+
+					if (matrix[i][m] != matrix[i][m]) { // NaN
+						outFile << "n/a";
+					} else {
+						outFile << scientific << matrix[i][m];
+					}
+				}
+				if (l < len - 1)
+					outFile << "\t";
 			}
 			outFile << endl;
 		}
