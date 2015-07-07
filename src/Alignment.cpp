@@ -212,9 +212,9 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 
 				stuartList.push_back(stuart);
 				if (df > 0)
-				    pBowkerList.push_back(xChi_Square_Distribution_Tail(bowker, df));
+					pBowkerList.push_back(xChi_Square_Distribution_Tail(bowker, df));
 				else
-				    pBowkerList.push_back(1.0);
+					pBowkerList.push_back(1.0);
 
 				unsigned int dfS = _dim - 1;
 				unsigned int dfA = df - dfS;
@@ -222,15 +222,15 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 					pStuartList.push_back(numeric_limits<double>::quiet_NaN());
 					pAbabnehList.push_back(numeric_limits<double>::quiet_NaN());
 				} else {
-				    if (dfS > 0)
-					pStuartList.push_back(xChi_Square_Distribution_Tail(stuart, dfS));
-				    else
-					pStuartList.push_back(1.0);
+					if (dfS > 0)
+						pStuartList.push_back(xChi_Square_Distribution_Tail(stuart, dfS));
+					else
+						pStuartList.push_back(1.0);
 
-				    if (dfA > 0)
-					pAbabnehList.push_back(xChi_Square_Distribution_Tail(bowker - stuart, dfA));
-				    else
-					pAbabnehList.push_back(1.0);
+					if (dfA > 0)
+						pAbabnehList.push_back(xChi_Square_Distribution_Tail(bowker - stuart, dfA));
+					else
+						pAbabnehList.push_back(1.0);
 				}
 
 				double prior = 1.0;
@@ -245,8 +245,8 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 
 					if (x_i > 0 && y_i > 0) {
 						c++;
-						x_i+= prior;
-						y_i+= prior;
+						x_i += prior;
+						y_i += prior;
 						for (int j = 0; j < _dim; j++) {
 							double x_j = n.getRowSum(j) + prior;
 							double y_j = n.getColSum(j) + prior;
@@ -261,25 +261,25 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 				double aitchisonFull = 0.0;
 				c = 0;
 				for (int g = 0; g < _dim; g++) {
-					for (int h = g+1; h < _dim; h++) {
+					for (int h = g + 1; h < _dim; h++) {
 						double y_i = n(g, h);
 						double z_i = n(h, g);
 						if (y_i > 0 && z_i > 0) {
 							if (verbose) {
 								cout << "y[" << c << "]=" << y_i << " z[" << c << "]=" << z_i << endl;
 							}
-							y_i+= prior;
-							z_i+= prior;
+							y_i += prior;
+							z_i += prior;
 							int d = 0;
 							for (int i = 0; i < _dim; i++) {
-								for (int j = i+1; j < _dim; j++) {
+								for (int j = i + 1; j < _dim; j++) {
 									double y_j = n(i, j);
 									double z_j = n(j, i);
 									if (verbose) {
 										cout << "  y[" << d << "]=" << y_j << " z[" << d << "]=" << z_j << endl;
 									}
-									y_j+= prior;
-									z_j+= prior;
+									y_j += prior;
+									z_j += prior;
 									double logDiff = log(y_i / y_j) - log(z_i / z_j);
 									aitchisonFull += (logDiff * logDiff);
 									d++;
@@ -305,6 +305,77 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 		_aitchisonMarg.push_back(aitchisonMargList);
 		_aitchisonFull.push_back(aitchisonFullList);
 	}
+}
+
+void Alignment::printStatistics(vector<double> &pValues, char id) {
+	double minP = 1.0;
+	double sumP = 0;
+	vector<unsigned int> count(10, 0);
+
+	unsigned int j = 0;
+	for (unsigned int k = 0; k < _alignment.size(); k++) {
+		for (unsigned int l = k + 1; l < _alignment.size(); l++) {
+			if (pValues[j] < minP)
+				minP = pValues[j];
+			if (pValues[j] < 0.05)
+				count[0]++;
+			if (pValues[j] < 0.01)
+				count[1]++;
+			if (pValues[j] < 0.005)
+				count[2]++;
+			if (pValues[j] < 0.001)
+				count[3]++;
+			if (pValues[j] < 0.0005)
+				count[4]++;
+			if (pValues[j] < 0.0001)
+				count[5]++;
+			if (pValues[j] < 0.00005)
+				count[6]++;
+			if (pValues[j] < 0.00001)
+				count[7]++;
+			if (pValues[j] < 0.000005)
+				count[8]++;
+			if (pValues[j] < 0.000001)
+				count[9]++;
+			sumP += pValues[j];
+			j++;
+		}
+	}
+
+	vector<double> sortedP(pValues.begin(), pValues.end());
+	sort(sortedP.begin(), sortedP.end());
+	double medP = sortedP[sortedP.size() / 2];
+	if (sortedP.size() % 2 == 0) {
+		medP += sortedP[sortedP.size() / 2 - 1];
+		medP /= 2;
+	}
+
+	cout.precision(2);
+	if (minP < 0.05)
+		cout << "  " << id << ": P-values < 0.05            " << setw(8) << count[0] << " (" << fixed << (double) count[0] * 100 / j << "%)" << endl;
+	if (minP < 0.01)
+		cout << "  " << id << ": P-values < 0.01            " << setw(8) << count[1] << " (" << fixed << (double) count[1] * 100 / j << "%)" << endl;
+	if (minP < 0.005)
+		cout << "  " << id << ": P-values < 0.005           " << setw(8) << count[2] << " (" << fixed << (double) count[2] * 100 / j << "%)" << endl;
+	if (minP < 0.001)
+		cout << "  " << id << ": P-values < 0.001           " << setw(8) << count[3] << " (" << fixed << (double) count[3] * 100 / j << "%)" << endl;
+	if (minP < 0.0005)
+		cout << "  " << id << ": P-values < 0.0005          " << setw(8) << count[4] << " (" << fixed << (double) count[4] * 100 / j << "%)" << endl;
+	if (minP < 0.0001)
+		cout << "  " << id << ": P-values < 0.0001          " << setw(8) << count[5] << " (" << fixed << (double) count[5] * 100 / j << "%)" << endl;
+	if (minP < 0.00005)
+		cout << "  " << id << ": P-values < 0.00005         " << setw(8) << count[6] << " (" << fixed << (double) count[6] * 100 / j << "%)" << endl;
+	if (minP < 0.00001)
+		cout << "  " << id << ": P-values < 0.00001         " << setw(8) << count[7] << " (" << fixed << (double) count[7] * 100 / j << "%)" << endl;
+	if (minP < 0.000005)
+		cout << "  " << id << ": P-values < 0.000005        " << setw(8) << count[8] << " (" << fixed << (double) count[8] * 100 / j << "%)" << endl;
+	if (minP < 0.000001)
+		cout << "  " << id << ": P-values < 0.000001        " << setw(8) << count[9] << " (" << fixed << (double) count[9] * 100 / j << "%)" << endl;
+	cout << "  " << id << ": Number of tests              " << setw(15) << j << endl;
+	cout.precision(8);
+	cout << "  " << id << ": Median P-value               " << setw(15) << scientific << medP << endl;
+	cout << "  " << id << ": Average P-value              " << setw(15) << scientific << sumP / j << endl;
+	cout << "  " << id << ": Smallest P-value             " << setw(15) << scientific << minP << endl;
 }
 
 void Alignment::writeResults(Options* options) {
@@ -338,9 +409,7 @@ void Alignment::writeResults(Options* options) {
 		unsigned int windowEnd = windowStart + windowSize;
 		if (windowEnd > _cols)
 			windowEnd = _cols;
-		vector<unsigned int> count(10, 0);
-		double minP = 1.0;
-		double sumP = 0;
+
 		unsigned int j = 0;
 		for (unsigned int k = 0; k < len; k++)
 			for (unsigned int l = k + 1; l < len; l++) {
@@ -363,73 +432,24 @@ void Alignment::writeResults(Options* options) {
 				}
 
 				resultsFile << CSV_SEPARATOR << _dms[i][j] << CSV_SEPARATOR << _ds[i][j];
-
 				resultsFile << CSV_SEPARATOR << _aitchisonMarg[i][j] << CSV_SEPARATOR << _aitchisonFull[i][j];
-
 				resultsFile << CSV_SEPARATOR << windowStart << CSV_SEPARATOR << windowEnd - 1 << endl;
-
-				if (_pBowker[i][j] < minP)
-					minP = _pBowker[i][j];
-				if (_pBowker[i][j] < 0.05)
-					count[0]++;
-				if (_pBowker[i][j] < 0.01)
-					count[1]++;
-				if (_pBowker[i][j] < 0.005)
-					count[2]++;
-				if (_pBowker[i][j] < 0.001)
-					count[3]++;
-				if (_pBowker[i][j] < 0.0005)
-					count[4]++;
-				if (_pBowker[i][j] < 0.0001)
-					count[5]++;
-				if (_pBowker[i][j] < 0.00005)
-					count[6]++;
-				if (_pBowker[i][j] < 0.00001)
-					count[7]++;
-				if (_pBowker[i][j] < 0.000005)
-					count[8]++;
-				if (_pBowker[i][j] < 0.000001)
-					count[9]++;
-				sumP+= _pBowker[i][j];
 
 				j++;
 			}
 
-		vector<double> sortedP(_pBowker[i].begin(), _pBowker[i].end());
-		sort(sortedP.begin(), sortedP.end());
-		double medP = sortedP[sortedP.size()/2 ];
-		if (sortedP.size()%2 == 0) {
-			medP+= sortedP[sortedP.size()/2 - 1 ];
-			medP/= 2;
-		}
-
 		cout << endl << "Highlights from the analysis (window " << windowStart << "-" << windowEnd - 1 << "):" << endl;
-		cout.precision(2);
-		if (minP < 0.05)
-			cout << "P-values < 0.05                 " << setw(8) << count[0] << " (" << fixed << (double) count[0] * 100 / j << "%)" << endl;
-		if (minP < 0.01)
-			cout << "P-values < 0.01                 " << setw(8) << count[1] << " (" << fixed << (double) count[1] * 100 / j << "%)" << endl;
-		if (minP < 0.005)
-			cout << "P-values < 0.005                " << setw(8) << count[2] << " (" << fixed << (double) count[2] * 100 / j << "%)" << endl;
-		if (minP < 0.001)
-			cout << "P-values < 0.001                " << setw(8) << count[3] << " (" << fixed << (double) count[3] * 100 / j << "%)" << endl;
-		if (minP < 0.0005)
-			cout << "P-values < 0.0005               " << setw(8) << count[4] << " (" << fixed << (double) count[4] * 100 / j << "%)" << endl;
-		if (minP < 0.0001)
-			cout << "P-values < 0.0001               " << setw(8) << count[5] << " (" << fixed << (double) count[5] * 100 / j << "%)" << endl;
-		if (minP < 0.00005)
-			cout << "P-values < 0.00005              " << setw(8) << count[6] << " (" << fixed << (double) count[6] * 100 / j << "%)" << endl;
-		if (minP < 0.00001)
-			cout << "P-values < 0.00001              " << setw(8) << count[7] << " (" << fixed << (double) count[7] * 100 / j << "%)" << endl;
-		if (minP < 0.000005)
-			cout << "P-values < 0.000005             " << setw(8) << count[8] << " (" << fixed << (double) count[8] * 100 / j << "%)" << endl;
-		if (minP < 0.000001)
-			cout << "P-values < 0.000001             " << setw(8) << count[9] << " (" << fixed << (double) count[9] * 100 / j << "%)" << endl;
-		cout << "Number of tests                   " << setw(15) << j << endl;
-		cout.precision(8);
-		cout << "Median P-value                    " << setw(15) << scientific << medP << endl;
-		cout << "Average P-value                   " << setw(15) << scientific << sumP / j << endl;
-		cout << "Smallest P-value                  " << setw(15) << scientific << minP << endl;
+
+		cout << "  Bowker's test:" << endl;
+		printStatistics(_pBowker[i], 'B');
+		cout << endl;
+
+		cout << "  Stuarts's test:" << endl;
+		printStatistics(_pStuart[i], 'S');
+		cout << endl;
+
+		cout << "  Ababneh et al.'s test:" << endl;
+		printStatistics(_pAbabneh[i], 'A');
 
 		i++;
 	}
@@ -440,26 +460,25 @@ void Alignment::writeResults(Options* options) {
 		cout << endl;
 		cout << "Writing extended results/distances to:" << endl;
 		if (options->writeBowkerFile)
-			writeExtendedResult("Bowker\'s test             ", options->prefix+".bowker.", "csv", windowSize, windowStep, _pBowker);
+			writeExtendedResult("Bowker\'s test             ", options->prefix + ".bowker.", "csv", windowSize, windowStep, _pBowker);
 		if (options->writeStuartFile)
-			writeExtendedResult("Stuart\'s test             ", options->prefix+".stuart.", "csv", windowSize, windowStep, _pStuart);
+			writeExtendedResult("Stuart\'s test             ", options->prefix + ".stuart.", "csv", windowSize, windowStep, _pStuart);
 		if (options->writeAbabnehFile)
-			writeExtendedResult("Ababneh\'s test            ", options->prefix+".ababneh.", "csv", windowSize, windowStep, _pAbabneh);
-			
+			writeExtendedResult("Ababneh\'s test            ", options->prefix + ".ababneh.", "csv", windowSize, windowStep, _pAbabneh);
+
 		if (options->writeAmsFile)
-			writeExtendedDistances("Aitchison\'s distances (marg)", options->prefix+".AMS.", "dst", windowSize, windowStep, _aitchisonMarg);
+			writeExtendedDistances("Aitchison\'s distances (marg)", options->prefix + ".AMS.", "dst", windowSize, windowStep, _aitchisonMarg);
 		if (options->writeAfsFile)
-			writeExtendedDistances("Aitchison\'s distances (full)", options->prefix+".AFS.", "dst", windowSize, windowStep, _aitchisonFull);
+			writeExtendedDistances("Aitchison\'s distances (full)", options->prefix + ".AFS.", "dst", windowSize, windowStep, _aitchisonFull);
 		if (options->writeEmsFile)
-			writeExtendedDistances("Euclidian distances (marg)   ", options->prefix+".EMS.", "dst", windowSize, windowStep, _dms);
+			writeExtendedDistances("Euclidian distances (marg)   ", options->prefix + ".EMS.", "dst", windowSize, windowStep, _dms);
 		if (options->writeEfsFile)
-			writeExtendedDistances("Euclidian distances (full)   ", options->prefix+".EFS.", "dst", windowSize, windowStep, _ds);
+			writeExtendedDistances("Euclidian distances (full)   ", options->prefix + ".EFS.", "dst", windowSize, windowStep, _ds);
 	}
 
 }
 
-void Alignment::writeExtendedResult(string title, string baseName, string ext, unsigned int windowSize, unsigned int windowStep, vector< vector<double> >& matrix)
-{
+void Alignment::writeExtendedResult(string title, string baseName, string ext, unsigned int windowSize, unsigned int windowStep, vector<vector<double> >& matrix) {
 	ofstream outFile;
 	string outFileName;
 	cout.flags(ios::left);
@@ -473,7 +492,7 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 	unsigned int len = _alignment.size();
 	unsigned int i = 0;
 	for (unsigned int windowStart = 0; windowStart < _cols; windowStart += windowStep) {
-		if (windowSize <  _cols) {
+		if (windowSize < _cols) {
 			unsigned int windowEnd = windowStart + windowSize - 1;
 			if (windowEnd > _cols - 1)
 				windowEnd = _cols - 1;
@@ -492,7 +511,6 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 			outFile << CSV_SEPARATOR << _alignment[l].getName();
 		}
 		outFile << endl;
-
 
 		for (unsigned int k = 0; k < len; k++) {
 			outFile.flags(ios::left);
@@ -522,8 +540,7 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 	}
 }
 
-void Alignment::writeExtendedDistances(string title, string baseName, string ext, unsigned int windowSize, unsigned int windowStep, vector< vector<double> >& matrix)
-{
+void Alignment::writeExtendedDistances(string title, string baseName, string ext, unsigned int windowSize, unsigned int windowStep, vector<vector<double> >& matrix) {
 	ofstream outFile;
 	string outFileName;
 	cout.flags(ios::left);
@@ -537,7 +554,7 @@ void Alignment::writeExtendedDistances(string title, string baseName, string ext
 	unsigned int len = _alignment.size();
 	unsigned int i = 0;
 	for (unsigned int windowStart = 0; windowStart < _cols; windowStart += windowStep) {
-		if (windowSize <  _cols) {
+		if (windowSize < _cols) {
 			unsigned int windowEnd = windowStart + windowSize - 1;
 			if (windowEnd > _cols - 1)
 				windowEnd = _cols - 1;
@@ -560,7 +577,7 @@ void Alignment::writeExtendedDistances(string title, string baseName, string ext
 				outFile << name << " ";
 			else
 				outFile << setw(10) << left << name;
-			
+
 			outFile << right;
 			for (unsigned int l = 0; l < len; l++) {
 				if (k == l) {

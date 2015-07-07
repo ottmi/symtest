@@ -19,6 +19,8 @@ public:
 
 	void testSymmetry(string prefix, int windowSize, int windowStep);
 
+	void printStatistics(vector<double> &pValues, char id);
+
 	void writeResults(Options* options);
 	void writeExtendedResult(string title, string baseName, string ext, unsigned int windowSize, unsigned int windowStep, vector< vector<double> >& matrix);
 	void writeExtendedDistances(string title, string baseName, string ext, unsigned int windowSize, unsigned int windowStep, vector< vector<double> >& matrix);
