@@ -14,6 +14,7 @@
 #include "Alignment.h"
 #include "Matrix.h"
 #include "chi.h"
+#include "heatmap.h"
 #include "helper.h"
 
 Alignment::Alignment() {
@@ -411,9 +412,8 @@ void Alignment::writeResults(Options* options) {
 			windowEnd = _cols;
 
 		unsigned int j = 0;
-		for (unsigned int k = 0; k < len; k++)
+		for (unsigned int k = 0; k < len; k++) {
 			for (unsigned int l = k + 1; l < len; l++) {
-
 				resultsFile << _alignment[k].getName() << CSV_SEPARATOR << _alignment[l].getName() << scientific;
 
 				unsigned int dfB = _df[i][j];
@@ -437,6 +437,7 @@ void Alignment::writeResults(Options* options) {
 
 				j++;
 			}
+		}
 
 		cout << endl << "Highlights from the analysis (window " << windowStart << "-" << windowEnd - 1 << "):" << endl;
 
@@ -512,10 +513,13 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 		}
 		outFile << endl;
 
+		double cij[len*len];
+		string seqNames[len];
 		for (unsigned int k = 0; k < len; k++) {
 			outFile.flags(ios::left);
 			outFile << _alignment[k].getName();
 			outFile.flags(ios::right);
+			seqNames[k] = _alignment[k].getName();
 			for (unsigned int l = 0; l < len; l++) {
 				if (k == l) {
 					outFile << CSV_SEPARATOR << "0";
@@ -525,7 +529,7 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 						m = k * (len - 1) - (k - 1) * k / 2 + l - k - 1;
 					else
 						m = l * (len - 1) - (l - 1) * l / 2 + k - l - 1;
-
+					cij[l*len + k] = matrix[i][m];
 					if (matrix[i][m] != matrix[i][m]) { // NaN
 						outFile << CSV_SEPARATOR << "n/a";
 					} else {
@@ -536,6 +540,8 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 			outFile << endl;
 		}
 		outFile.close();
+		outputFullHeatmap(outFileName.substr(0, outFileName.length()-ext.length()-1), seqNames, cij, len);
+		outputTriHeatmap(outFileName.substr(0, outFileName.length()-ext.length()-1), seqNames, cij, len);
 		i++;
 	}
 }
