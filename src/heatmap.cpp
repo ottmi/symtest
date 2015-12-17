@@ -86,35 +86,35 @@ void outputSeqName(ofstream& fout, double x, double y, int angle, string txt, st
 int longestLenFirst(string* seqArray, int num, int totNum) {
 	if (totNum == 0)
 		return 0;
-	int max_len = seqArray[0].length();
+	unsigned int max_len = seqArray[0].length();
 	for (int i=1; i<num && i<totNum; i++)
 		if (seqArray[i].length() > max_len)
 			max_len = seqArray[i].length();
-	return max_len;
+	return (int) max_len;
 }
 
 // get the longest length among the last "num" strings inside the array
 int longestLenLast(string* seqArray, int num, int totNum) {
 	if (totNum == 0)
 		return 0;
-	int max_len = seqArray[totNum-1].length();
+	unsigned int max_len = seqArray[totNum-1].length();
 	int i;
 	for (i=totNum-2; i>=totNum-num && i>=0; i--)
 		if (seqArray[i].length() > max_len)
 			max_len = seqArray[i].length();
-	return max_len;
+	return (int) max_len;
 }
 
 // get the longest length among all the strings inside the array
 int longestLen(string* seqArray, int totNum) {
 	if (totNum == 0)
 		return 0;
-	int max_len = seqArray[0].length();
+	unsigned int max_len = seqArray[0].length();
 	int i;
 	for (i=1; i<totNum; i++)
 		if (seqArray[i].length() > max_len)
 			max_len = seqArray[i].length();
-	return max_len;
+	return (int) max_len;
 }
 
 // output the legend

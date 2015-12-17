@@ -513,8 +513,8 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 		}
 		outFile << endl;
 
-		double cij[len*len];
-		string seqNames[len];
+		double *cij = new double[len*len];
+		string *seqNames = new string[len];
 		for (unsigned int k = 0; k < len; k++) {
 			outFile.flags(ios::left);
 			outFile << _alignment[k].getName();
@@ -543,6 +543,8 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 		outputFullHeatmap(outFileName.substr(0, outFileName.length()-ext.length()-1), seqNames, cij, len);
 		outputTriHeatmap(outFileName.substr(0, outFileName.length()-ext.length()-1), seqNames, cij, len);
 		i++;
+		delete(cij);
+		delete(seqNames);
 	}
 }
 

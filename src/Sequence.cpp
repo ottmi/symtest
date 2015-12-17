@@ -56,7 +56,6 @@ unsigned int Sequence::getNumerical(unsigned int pos)
 	else
 		return 0;
 }
-;
 
 bool Sequence::charIsUnambiguous(unsigned int n)
 {

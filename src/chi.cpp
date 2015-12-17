@@ -39,8 +39,7 @@ static long double Sum_Poisson_Terms(long double x, int n) {
       sum += term;
    }
    return expl(-x)*sum;
-};
-
+}
 
 static long double Sum_Over_Odd_Terms(long double x, int dof)
 {
@@ -65,7 +64,7 @@ static long double Sum_Over_Odd_Terms(long double x, int dof)
 
    return 2.0L * xGaussian_Distribution_Tail(sqrtx)
                                       + sqrtl(twooverpi) * expl(-x/2.0L)*sum;
-};
+}
 
 // This function returns the probability that a random variable with a standard
 // Normal (Gaussian) distribution has a value greater than "x"
@@ -78,4 +77,4 @@ long double xChi_Square_Distribution_Tail(long double x, int dof) {
 		return Sum_Poisson_Terms(x/2.0L, dof/2);
    else
 		return Sum_Over_Odd_Terms(x,dof);
-};
+}
