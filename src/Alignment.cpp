@@ -543,8 +543,8 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 		outputFullHeatmap(outFileName.substr(0, outFileName.length()-ext.length()-1), seqNames, cij, len);
 		outputTriHeatmap(outFileName.substr(0, outFileName.length()-ext.length()-1), seqNames, cij, len);
 		i++;
-		delete(cij);
-		delete(seqNames);
+		delete[] cij;
+		delete[] seqNames;
 	}
 }
 
