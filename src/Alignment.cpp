@@ -459,7 +459,7 @@ void Alignment::writeResults(Options* options) {
 
 	if (options->writeExtendedTestResults) {
 		cout << endl;
-		cout << "Writing extended results/distances to:" << endl;
+		cout << "Writing extended results/heatmaps to:" << endl;
 		if (options->writeBowkerFile)
 			writeExtendedResult("Bowker\'s test             ", options->prefix + ".bowker.", "csv", windowSize, windowStep, _pBowker);
 		if (options->writeStuartFile)
@@ -467,6 +467,7 @@ void Alignment::writeResults(Options* options) {
 		if (options->writeAbabnehFile)
 			writeExtendedResult("Ababneh\'s test            ", options->prefix + ".ababneh.", "csv", windowSize, windowStep, _pAbabneh);
 
+		cout << "Writing extended distances to:" << endl;
 		if (options->writeAmsFile)
 			writeExtendedDistances("Aitchison\'s distances (marg)", options->prefix + ".AMS.", "dst", windowSize, windowStep, _aitchisonMarg);
 		if (options->writeAfsFile)
@@ -483,11 +484,16 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 	ofstream outFile;
 	string outFileName;
 	cout.flags(ios::left);
+	cout << "  " << title << endl;
 	if (windowSize < _cols) {
-		cout << "  " << setw(29) << title << baseName << "<window>." << ext << endl;
+		cout << "    Extended results           " << baseName << "<window>." << ext << endl;
+		cout << "    Triangular matrix          " << baseName << "<window>.triangular.svg" << endl;
+		cout << "    Full matrix                " << baseName << "<window>.full.svg" << endl;
 	} else {
 		outFileName = baseName + ext;
-		cout << "  " << setw(29) << title << outFileName << endl;
+		cout << "    Extended results           " << outFileName << endl;
+		cout << "    Triangular matrix          " << baseName << "triangular.svg" << endl;
+		cout << "    Full matrix                " << baseName << "full.svg" << endl;
 	}
 
 	unsigned int len = _alignment.size();
