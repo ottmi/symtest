@@ -5,16 +5,32 @@
 //==============================================================//
 
 static int HEATMAP_COLOR_NUM = 11;
-static string HEATMAP_COLOR_MAP[] = {"#AA0000","#FF2A2A", "#FF6600", "#FF9955", "#FFCC00", "#DDFF55", "#99FF55", "#66FF00", "#00AA00", "#005500", "#002B00"};
-static string HEATMAP_COLOR_DESC[] = {"= 0.0", "&lt; 0.1", "&lt; 0.2", "&lt; 0.3", "&lt; 0.4", "&lt; 0.5", "&lt; 0.6", "&lt; 0.7", "&lt; 0.8", "&lt; 0.9", "&#x2264; 1.0"};
+static string HEATMAP_COLOR_MAP[] = {"#FFFFFF", "#FFFF99", "#FFFF33", "#FFCC00", "#FF6600", "#FF0000", "#CC0033", "#990066", "#8800AA", "#4400AA", "#220055"};
+static string HEATMAP_COLOR_DESC[] = {"&#x2265; 5e-2", "&lt; 5e-2", "&lt; 5e-3", "&lt; 5e-4", "&lt; 5e-5", "&lt; 5e-6", "&lt; 5e-7", "&lt; 5e-8", "&lt; 5e-9", "&lt; 5e-10", "&lt; 5e-11"};
 
 // get the corresponding color code according to the value
 string getColor(double value) {
-	
-	if (value == 0.0)
-		return HEATMAP_COLOR_MAP[0];
-	else
-		return HEATMAP_COLOR_MAP[(int)(value*10.0) + 1];
+	if (value < 5e-11)
+		return HEATMAP_COLOR_MAP[10];
+	if (value < 5e-10)
+		return HEATMAP_COLOR_MAP[9];
+	if (value < 5e-9)
+		return HEATMAP_COLOR_MAP[8];
+	if (value < 5e-8)
+		return HEATMAP_COLOR_MAP[7];
+	if (value < 5e-7)
+		return HEATMAP_COLOR_MAP[6];
+	if (value < 5e-6)
+		return HEATMAP_COLOR_MAP[5];
+	if (value < 5e-5)
+		return HEATMAP_COLOR_MAP[4];
+	if (value < 5e-4)
+		return HEATMAP_COLOR_MAP[3];
+	if (value < 5e-3)
+		return HEATMAP_COLOR_MAP[2];
+	if (value < 5e-2)
+		return HEATMAP_COLOR_MAP[1];
+	return HEATMAP_COLOR_MAP[0];
 }
 
 //==============================================================//
@@ -148,7 +164,7 @@ void outputTriHeatmap(string prefixOut, string* seqNames, double* cij, int seqNu
 	int longestLastTextLen = longestLenLast(seqNames, 3, seqNum);
 	int width = HEATMAP_LEFT_BORDER + longestFirstTextLen*font_size/2.0 + HEATMAP_GAP_BW_TEXT + 
 				block_size*(seqNum-1) + HEATMAP_GAP_BW_LEGEND + HEATMAP_LEGEND_BLOCK_DIM +
-				HEATMAP_LEGEND_GAP_BW_DESC + HEATMAP_LEGEND_FONT_SIZE*2.5 + HEATMAP_RIGHT_BORDER;
+				HEATMAP_LEGEND_GAP_BW_DESC + HEATMAP_LEGEND_FONT_SIZE*3.5 + HEATMAP_RIGHT_BORDER;
 	int height = HEATMAP_TOP_BORDER + block_size*seqNum + (longestLastTextLen*font_size/2.0 - block_size) +
 				 HEATMAP_BOTTOM_BORDER;
 	int height_legend = HEATMAP_TOP_BORDER + HEATMAP_LEGEND_BLOCK_DIM * HEATMAP_COLOR_NUM + HEATMAP_BOTTOM_BORDER;
@@ -213,7 +229,7 @@ void outputFullHeatmap(string prefixOut, string* seqNames, double* cij, int seqN
 	int longestTextLen = longestLen(seqNames, seqNum);
 	int width = HEATMAP_LEFT_BORDER + longestTextLen*font_size/2.0 + HEATMAP_GAP_BW_TEXT + 
 				block_size*seqNum + HEATMAP_GAP_BW_LEGEND + HEATMAP_LEGEND_BLOCK_DIM +
-				HEATMAP_LEGEND_GAP_BW_DESC + HEATMAP_LEGEND_FONT_SIZE*2.5 + HEATMAP_RIGHT_BORDER;
+				HEATMAP_LEGEND_GAP_BW_DESC + HEATMAP_LEGEND_FONT_SIZE*3.5 + HEATMAP_RIGHT_BORDER;
 	int height = HEATMAP_TOP_BORDER + block_size*seqNum + HEATMAP_BOTTOM_BORDER;
 	int height_legend = HEATMAP_TOP_BORDER + HEATMAP_LEGEND_BLOCK_DIM * HEATMAP_COLOR_NUM + HEATMAP_BOTTOM_BORDER;
 	if (height < height_legend)
