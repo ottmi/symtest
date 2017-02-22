@@ -95,7 +95,6 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 
 	cout.precision(6);
 	for (unsigned int windowStart = 0; windowStart < _cols; windowStart += windowStep) {
-		vector<vector<double> > baseFrequencies;
 		vector<unsigned int> dfList;
 		vector<double> bowkerList;
 		vector<double> pBowkerList;
@@ -109,28 +108,6 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 
 		for (unsigned int k = 0; k < len; k++) { // 1st sequence
 			Sequence s1 = _alignment[k];
-			vector<unsigned long> baseOccurences(_dim, 0);
-			unsigned int windowEnd = windowStart + windowSize;
-			if (windowEnd > _cols)
-				windowEnd = _cols;
-			for (unsigned int m = windowStart; m < windowEnd; m++) {
-				unsigned int c = s1.getNumerical(m);
-				if (s1.charIsUnambiguous(c))
-					baseOccurences[c]++;
-			}
-
-			if (verbose)
-				cout << "baseFreq[" << k << "]:";
-			vector<double> baseFreq(_dim);
-			for (int c = 0; c < _dim; c++) {
-				baseFreq[c] = ((double) baseOccurences[c] + (1.0 / _dim)) / (windowSize + 1);
-				if (verbose)
-					cout << baseFreq[c] << " ";
-			}
-			baseFrequencies.push_back(baseFreq);
-			if (verbose)
-				cout << endl;
-
 			for (unsigned int l = k + 1; l < len; l++) { // 2nd sequence
 				Sequence s2 = _alignment[l];
 				unsigned int sum = 0;
