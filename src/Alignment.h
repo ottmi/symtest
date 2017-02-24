@@ -1,6 +1,7 @@
 #ifndef ALIGNMENT_H_
 #define ALIGNMENT_H_
 #include <vector>
+#include <map>
 #include <string>
 #include "globals.h"
 #include "Sequence.h"
@@ -31,9 +32,11 @@ public:
 private:
 	int _dim;
 	int _dataType;
+	int _groupSize;
 	int _format;
 	unsigned int _cols;
 	vector<Sequence> _alignment;
+	map<unsigned int, unsigned int> _mapEnumeration;
 
 	vector< vector<unsigned int> > _df;
 	vector< vector<double> > _bowker;

@@ -25,6 +25,10 @@ Alignment::Alignment(Options *options) {
 	AlignmentReader alignmentReader(options->inputAlignment);
 	_alignment = alignmentReader.getSequences(options->columnFrom, options->columnTo, options->listOfSequences);
 	_cols = alignmentReader.getCols();
+	if (_cols % options->groupLength != 0) {
+		cout << "ERROR: Grouping is active, but the alignment length of " << _cols << " columns is not a multiple of the group length of " << options->groupLength << endl;
+		exit(255);
+	}
 	_cols /= options->groupLength;
 
 	string dataTypeDesc[] = { "DNA", "AA", "alphanumeric" };
@@ -60,20 +64,63 @@ Alignment::Alignment(Options *options) {
 		cout << "Read " << getNumOfRows() << " sequences which have been defined to be " << dataTypeDesc[_dataType] << "." << endl;
 	}
 
+	if (_dataType != _DNA_DATA && options->grouping.size() != 1) {
+		cout << "ERROR: The input data is " << dataTypeDesc[_dataType] << " and grouping is active. This makes no sense." << endl;
+		exit(254);
+	}
+
+	_groupSize = options->grouping.size();
+
+	int dim = 36;
 	if (_dataType == _DNA_DATA)
-		_dim = 4;
+		dim = 4;
 	else if (_dataType == _AA_DATA)
-		_dim = 20;
-	else
-		_dim = 36;
+		dim = 20;
+	_dim = 1;
+	for (int i = 0; i<_groupSize; i++) {
+		_dim*= dim;
+	}
+
 
 	for (unsigned int i = 0; i < _alignment.size(); i++) {
 		_alignment[i].translateToNum(_dataType, options);
 		if (verbose >= 2) {
 			cout << i << ": ";
 			for (unsigned int j = 0; j < _alignment[i].getLength() / options->groupLength; j++)
-				cout << mapNumToChar(_alignment[i].getNumerical(j), _dataType, options->grouping.size()) << " ";
+				cout << mapNumToChar(_alignment[i].getNumerical(j), _dataType, _groupSize) << " ";
 			cout << endl;
+		}
+	}
+
+	cout << "Groupsize is " << _groupSize << ", matrix dimension will be " << _dim << endl;
+
+	unsigned int n = 0;
+	unsigned int i_max, j_max;
+	if (_dataType == _DNA_DATA) {
+		(_groupSize > 2) ? i_max = 4 : i_max = 0;
+		(_groupSize > 1) ? j_max = 4 : j_max = 0;
+		for (unsigned int i=0; i<=i_max; i++) {
+			if (i == 4)
+				n-= 16;
+			for (unsigned int j=0; j<=j_max; j++) {
+				unsigned int c = (i << 16) | (j << 8);
+				if (j == 4)
+					n-= 4;
+				for (unsigned int k=0; k<=4; k++) {
+					_mapEnumeration[c] = n;
+					c++;
+					if (k != 3)
+						n++;
+				}
+			}
+		}
+	} else if (_dataType == _AA_DATA) {
+		for (unsigned int c=0; c<20; c++) {
+			_mapEnumeration[c] = c;
+		}
+	} else {
+		for (unsigned int c=0; c<36; c++) {
+			_mapEnumeration[c] = c;
 		}
 	}
 }
@@ -120,7 +167,7 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 					unsigned int c1 = s1.getNumerical(m);
 					unsigned int c2 = s2.getNumerical(m);
 					if (s1.charIsUnambiguous(c1) && s2.charIsUnambiguous(c2)) {
-						pair<unsigned int, unsigned int> p(c1, c2);
+						pair<unsigned int, unsigned int> p(_mapEnumeration[c1], _mapEnumeration[c2]);
 						if ((it = nmap.find(p)) != nmap.end())
 							it->second = it->second + 1;
 						else
@@ -595,3 +642,4 @@ void Alignment::writeExtendedDistances(string title, string baseName, string ext
 		i++;
 	}
 }
+
