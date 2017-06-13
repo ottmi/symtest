@@ -5,7 +5,7 @@
 //==============================================================//
 
 static int HEATMAP_COLOR_NUM = 11;
-static string HEATMAP_COLOR_MAP[] = {"#FFFFFF", "#FFFF99", "#FFFF33", "#FFCC00", "#FF6600", "#FF0000", "#CC0033", "#990066", "#8800AA", "#4400AA", "#220055"};
+static string HEATMAP_COLOR_MAP[] = {"#000000", "#800026", "#BD0026", "#E31A1C", "#FC4E2A", "#FD8D3C", "#FEB24C", "#FED976", "#FFEDA0", "#FFFFCC", "#FFFFFF"};
 static string HEATMAP_COLOR_DESC[] = {"&#x2265; 5e-2", "&lt; 5e-2", "&lt; 5e-3", "&lt; 5e-4", "&lt; 5e-5", "&lt; 5e-6", "&lt; 5e-7", "&lt; 5e-8", "&lt; 5e-9", "&lt; 5e-10", "&lt; 5e-11"};
 
 // get the corresponding color code according to the value
