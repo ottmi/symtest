@@ -7,18 +7,18 @@
 using namespace std;
 
 #define PROGNAME "symtest"
-#define VERSION "2.0.47"
-#define PROGDATE "2017-06-13"
+#define VERSION "2.0.49"
+#define PROGDATE "2019-03-07"
 
 #define _DNA_DATA	0
 #define	_AA_DATA	1
 #define	_ALPHANUM_DATA	2
 
-#define _DNA_MAP      "ACGTURYKMSWBDHVN?-"
+#define _DNA_MAP      "ACGTRYKMSWBDHVN?-"
 #define _AA_MAP       "ACDEFGHIKLMNPQRSTVWYBJXZ?-"
 #define _ALPHANUM_MAP "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?-"
 
-#define _DNA_UNAMB_THRES 	4
+#define _DNA_UNAMB_THRES 	3
 #define _AA_UNAMB_THRES 	19
 #define _ALPHANUM_UNAMB_THRES 	35
 

@@ -92,11 +92,11 @@ unsigned int mapCharToNum(string s, int dataType)
 
 				case 'T':
 				case 't':
+				case 'U':
+				case 'u':
 					d += 0x03;
 					break;
 
-				case 'U':
-				case 'u':
 				case 'R':
 				case 'r':
 					d += 0x04;
