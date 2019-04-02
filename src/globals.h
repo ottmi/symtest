@@ -7,20 +7,14 @@
 using namespace std;
 
 #define PROGNAME "symtest"
-#define VERSION "2.0.49"
-#define PROGDATE "2019-04-01"
+#define VERSION "2.0.50"
+#define PROGDATE "2019-04-02"
 
 #define _DNA_DATA	0
-#define	_AA_DATA	1
-#define	_ALPHANUM_DATA	2
-
-#define _DNA_MAP      "ACGTRYKMSWBDHVN?-"
-#define _AA_MAP       "ACDEFGHIKLMNPQRSTVWYBJXZ?-"
-#define _ALPHANUM_MAP "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?-"
-
-#define _DNA_UNAMB_THRES 	3
-#define _AA_UNAMB_THRES 	19
-#define _ALPHANUM_UNAMB_THRES 	35
+#define _RNA_DATA	1
+#define	_AA_DATA	2
+#define	_ALPHANUM_DATA	3
+#define _GENERIC_DATA   4
 
 #define	_FASTA_FORMAT	0
 #define	_PHYLIP_FORMAT	1
@@ -49,6 +43,8 @@ typedef struct opt_struct
     bool writeEfsFile;
     int windowSize;
     int windowStep;
+    string unambigousChars;
+    string ambigousChars;
     int help;
 } Options;
 

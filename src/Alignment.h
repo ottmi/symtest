@@ -31,12 +31,12 @@ public:
 
 private:
 	int _dim;
-	int _dataType;
 	int _groupSize;
 	int _format;
 	unsigned int _cols;
 	vector<Sequence> _alignment;
 	map<unsigned int, unsigned int> _mapEnumeration;
+	map<char, unsigned int> _charMap;
 
 	vector< vector<unsigned int> > _df;
 	vector< vector<double> > _bowker;

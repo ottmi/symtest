@@ -17,23 +17,15 @@ Sequence::~Sequence()
 	// TODO Auto-generated destructor stub
 }
 
-void Sequence::translateToNum(int dataType, Options *options)
+void Sequence::translateToNum(charMap_t& map, Options *options)
 {
-	_dataType = dataType;
-	if (dataType == _DNA_DATA)
-		_unambiguousThreshold = _DNA_UNAMB_THRES;
-	else if (dataType == _AA_DATA)
-		_unambiguousThreshold = _AA_UNAMB_THRES;
-	else
-		_unambiguousThreshold = _ALPHANUM_UNAMB_THRES;
-
+	_unambiguousThreshold = options->unambigousChars.size()-1;
 	unsigned int numOfSites = _sequence.length() / options->groupLength;
-	for (unsigned int i = 0; i < numOfSites; i++)
-	{
+	for (unsigned int i = 0; i < numOfSites; i++) {
 		vector<int> cols;
 		for (unsigned int j = 0; j < options->grouping.size(); j++)
 			cols.push_back(options->groupLength * i + options->grouping[j] - 1);
-		_numericSeq.push_back(mapCharToNum(getColumns(cols), dataType));
+		_numericSeq.push_back(mapCharToNum(getColumns(cols), map));
 	}
 	_groupSize = options->grouping.size();
 

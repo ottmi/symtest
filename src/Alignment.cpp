@@ -31,72 +31,46 @@ Alignment::Alignment(Options *options) {
 	}
 	_cols /= options->groupLength;
 
-	string dataTypeDesc[] = { "DNA", "AA", "alphanumeric" };
-	if (options->dataType < 0) {
-		map<char, unsigned long> baseOccurences;
-		for (unsigned int i = 0; i < _alignment.size(); i++) {
-			string s = _alignment[i].getSequence();
-			for (unsigned int j = 0; j < s.length(); j++)
-				baseOccurences[s[j]]++;
-		}
+	string dataTypeDesc[] = { "DNA", "RNA", "AA", "alphanumeric", "generic" };
+	cout << "Read " << getNumOfRows() << " sequences which have been defined to be " << dataTypeDesc[options->dataType] << " with " << options->unambigousChars.size() << " unambiguous characters (" << options->unambigousChars << ") and " << options->ambigousChars.size() << " ambiguous characters (" << options->ambigousChars << ")." << endl;
 
-		string maps[] = { _DNA_MAP, _AA_MAP, _ALPHANUM_MAP };
-		unsigned long counts[3];
-		for (unsigned int i = 0; i < 3; i++) {
-			counts[i] = 0;
-			string map = maps[i];
-			for (unsigned j = 0; j < map.length(); j++)
-				counts[i] += baseOccurences[map[j]];
-		}
-
-		if (verbose)
-			cout << counts[0] << " DNA characters, " << counts[1] << " AA characters, " << counts[2] << " Alphanum characters." << endl;
-		int dataTypeGuess = _ALPHANUM_DATA;
-		if (counts[2] == counts[0])
-			dataTypeGuess = _DNA_DATA;
-		else if (counts[2] == counts[1])
-			dataTypeGuess = _AA_DATA;
-		_dataType = dataTypeGuess;
-
-		cout << "Read " << getNumOfRows() << " sequences " << "which appear to be " << dataTypeDesc[_dataType] << "." << endl;
-	} else {
-		_dataType = options->dataType;
-		cout << "Read " << getNumOfRows() << " sequences which have been defined to be " << dataTypeDesc[_dataType] << "." << endl;
-	}
-
-	if (_dataType != _DNA_DATA && options->grouping.size() != 1) {
-		cout << "ERROR: The input data is " << dataTypeDesc[_dataType] << " and grouping is active. This makes no sense." << endl;
+	if (options->dataType != _DNA_DATA && options->grouping.size() != 1) {
+		cout << "ERROR: The input data is " << dataTypeDesc[options->dataType] << " and grouping is active. This makes no sense." << endl;
 		exit(254);
 	}
-
 	_groupSize = options->grouping.size();
 
-	int dim = 36;
-	if (_dataType == _DNA_DATA)
-		dim = 4;
-	else if (_dataType == _AA_DATA)
-		dim = 20;
-	_dim = 1;
-	for (int i = 0; i<_groupSize; i++) {
-		_dim*= dim;
+	if (options->dataType == _DNA_DATA) {
+		_dim = 1;
+		for (int i = 0; i<_groupSize; i++) {
+			_dim*= 4;
+		}
+	} else {
+		_dim = options->unambigousChars.size();
 	}
-
-
+	
+	for (unsigned int i = 0; i < options->unambigousChars.size(); i++) {
+		_charMap[options->unambigousChars[i]] = i;
+	}
+	for (unsigned int i = 0; i < options->ambigousChars.size(); i++) {
+		_charMap[options->ambigousChars[i]] = i + (int) options->unambigousChars.size();
+	}
+	
 	for (unsigned int i = 0; i < _alignment.size(); i++) {
-		_alignment[i].translateToNum(_dataType, options);
+		_alignment[i].translateToNum(_charMap, options);
 		if (verbose >= 2) {
 			cout << i << ": ";
 			for (unsigned int j = 0; j < _alignment[i].getLength() / options->groupLength; j++)
-				cout << mapNumToChar(_alignment[i].getNumerical(j), _dataType, _groupSize) << " ";
+				cout << mapNumToChar(_alignment[i].getNumerical(j), _groupSize, options->unambigousChars+options->ambigousChars);
 			cout << endl;
 		}
 	}
 
-	cout << "Groupsize is " << _groupSize << ", matrix dimension will be " << _dim << endl;
+	cout << "Groupsize is " << _groupSize << ", the matrix dimension " << _dim << endl;
 
 	unsigned int n = 0;
 	unsigned int i_max, j_max;
-	if (_dataType == _DNA_DATA) {
+	if (options->dataType == _DNA_DATA) {
 		(_groupSize > 2) ? i_max = 4 : i_max = 0;
 		(_groupSize > 1) ? j_max = 4 : j_max = 0;
 		for (unsigned int i=0; i<=i_max; i++) {
@@ -114,12 +88,8 @@ Alignment::Alignment(Options *options) {
 				}
 			}
 		}
-	} else if (_dataType == _AA_DATA) {
-		for (unsigned int c=0; c<20; c++) {
-			_mapEnumeration[c] = c;
-		}
 	} else {
-		for (unsigned int c=0; c<36; c++) {
+		for (unsigned int c=0; c<_dim; c++) {
 			_mapEnumeration[c] = c;
 		}
 	}

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "globals.h"
+#include "helper.h"
 
 using namespace std;
 
@@ -11,7 +12,7 @@ class Sequence {
 public:
 	Sequence(string name, string seq);
 	virtual ~Sequence();
-	void translateToNum(int dataType, Options *options);
+	void translateToNum(charMap_t& map, Options *options);
 	string& getName() { return _name; };
 	string& getLongName() { return _longName; };
 	string& getSequence() { return _sequence; };

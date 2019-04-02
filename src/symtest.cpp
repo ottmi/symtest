@@ -59,18 +59,51 @@ int parseArguments(int argc, char** argv, Options *options)
 				char type = optarg[0];
 				switch (type)
 				{
-					case 'a':
-					case 'A':
-						options->dataType = _AA_DATA;
-						break;
 					case 'd':
 					case 'D':
+						options->unambigousChars = "ACGT";
+						options->ambigousChars= "RYKMSWBDHVN?-";
 						options->dataType = _DNA_DATA;
+						break;
+					case 'r':
+					case 'R':
+						options->unambigousChars = "ACGU";
+						options->ambigousChars= "RYKMSWBDHVN?-";
+						options->dataType = _RNA_DATA;
+						break;
+					case 'a':
+					case 'A':
+						options->unambigousChars = "ACDEFGHIKLMNPQRSTVWY";
+						options->ambigousChars= "BJXZ?-";
+						options->dataType = _AA_DATA;
 						break;
 					case 'n':
 					case 'N':
+						options->unambigousChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+						options->ambigousChars= "?-";
 						options->dataType = _ALPHANUM_DATA;
 						break;
+						
+					case 'g':
+					case 'G':
+					{
+						if ((strlen(optarg) > 2) && (optarg[1] == ':')) {
+							optarg+= 2;
+							string s(optarg);
+							transform(s.begin(), s.end(), s.begin(), ::toupper);
+							size_t i = s.find(',');
+							options->unambigousChars = s.substr(0, i);
+							if (i != string::npos) {
+								options->ambigousChars = s.substr(i+1);
+							}
+							options->dataType = _GENERIC_DATA;
+							
+						} else {
+							cerr << "Syntax error in generic datatype definition: " << optarg << endl;
+							return 2;
+						}
+						break;
+					}
 					default:
 						cerr << "Unknown data type: " << optarg << endl;
 						return 2;
@@ -281,33 +314,34 @@ void printSyntax()
                        1         2         3         4         5         6         7         8
              012345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
-	cout << "Usage:" << endl;
-	cout << "  symtest [options] <alignment>" << endl;
-	cout << "  symtest -h" << endl;
-	cout << endl;
-
-	cout << "Options:" << endl;
-    cout << "  -t<a|d|n>      Data types: a = AA; d = DNA; n = Alphanumeric" << endl;
-    cout << "                 [default: auto-detect]" << endl;
-	cout << "  -s<FILE|LIST>  Only consider sequences in FILE or comma-separated LIST" << endl;
-    cout << "  -p<STRING>     Prefix for output files [default: name of alignment w/o .ext]" << endl;
+    cout << "Usage:" << endl;
+    cout << "  symtest [options] <alignment>" << endl;
+    cout << "  symtest -h" << endl;
     cout << endl;
-    cout << "  -c<n1-n2>      Limited window analysis: from column n1 to column n2," << endl;
-    cout << "                 enumeration starts with 1" << endl;
-    cout << "  -w<n3,n4>      Sliding window analysis: window size = n3; step size = n4" << endl;
-    cout << "  -g<LIST>       Grouping of codon sites: comma-separated, pos/neg to use/skip" << endl;
-    cout << "                 e.g., 1,2,-3 for duplets comprising 1st and 2nd position" << endl;
-    cout << "                       1,2,3  for triplets comprising 1st, 2nd, and 3rd position" << endl;
-    cout << "  -x[LIST]       Write extended output files [default: all available]" << endl;
-    cout << "                 Optional: restrict to files in LIST (comma-separated)" << endl;
-    cout << "                 Available: bowker, stuart, ababneh, AMS, AFS, EMS, EFS" << endl;
+    
+    cout << "Options:" << endl;
+    cout << "  -t<a|d|n|g:<u,a>> Data type: a = AA; d = DNA; n = Alphanumeric; g = generic;" << endl;
+    cout << "                    For generic data types, lists of unambiguous and ambiguous" << endl;
+    cout << "                    characters needs to be specified, separated by comma." << endl;
+    cout << "  -s<FILE|LIST>     Only consider sequences in FILE or comma-separated LIST" << endl;
+    cout << "  -p<STRING>        Prefix for output files [default: name of alignment w/o .ext]" << endl;
     cout << endl;
-    cout << "  -v[n5]         Be increasingly verbose [n5 = 0|1|2]" << endl;
+    cout << "  -c<n1-n2>         Limited window analysis: from column n1 to column n2," << endl;
+    cout << "                    enumeration starts with 1" << endl;
+    cout << "  -w<n3,n4>         Sliding window analysis: window size = n3; step size = n4" << endl;
+    cout << "  -g<LIST>          Grouping of codon sites: comma-separated, pos/neg to use/skip" << endl;
+    cout << "                    e.g., 1,2,-3 for duplets comprising 1st and 2nd position" << endl;
+    cout << "                          1,2,3  for triplets comprising 1st, 2nd, and 3rd position" << endl;
+    cout << "  -x[LIST]          Write extended output files [default: all available]" << endl;
+    cout << "                    Optional: restrict to files in LIST (comma-separated)" << endl;
+    cout << "                    Available: bowker, stuart, ababneh, AMS, AFS, EMS, EFS" << endl;
+    cout << endl;
+    cout << "  -v[n5]            Be increasingly verbose [n5 = 0|1|2]" << endl;
 #ifdef _OPENMP
-    cout << "  -n<n6>         Number of threads [default: " << omp_get_max_threads() << "]" << endl;
+    cout << "  -n<n6>            Number of threads [default: " << omp_get_max_threads() << "]" << endl;
 #endif
-	cout << "  -h             This help page" << endl;
-	cout << endl;
+    cout << "  -h                This help page" << endl;
+    cout << endl;
 }
 
 int main(int argc, char** argv)
