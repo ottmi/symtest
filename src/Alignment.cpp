@@ -128,7 +128,7 @@ Alignment::Alignment(Options *options) {
 Alignment::~Alignment() {
 }
 
-void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
+void Alignment::computeStatistics(int windowSize, int windowStep) {
 	cout << endl << "Performing tests of pairwise symmetry" << endl;
 
 	unsigned int len = _alignment.size();
@@ -143,22 +143,24 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 	cout.precision(6);
 	for (unsigned int windowStart = 0; windowStart < _cols; windowStart += windowStep) {
 		vector<unsigned int> dfList;
-		vector<double> bowkerList;
-		vector<double> pBowkerList;
-		vector<double> dsList;
-		vector<double> dmsList;
-		vector<double> stuartList;
-		vector<double> pStuartList;
-		vector<double> pAbabnehList;
-		vector<double> aitchisonMargList;
-		vector<double> aitchisonFullList;
+		vector<double> bowkerList; // Bowker's test
+		vector<double> pBowkerList; // Bowker's test probabilities
+		vector<double> dsList;  // Euclidian Distance (full symmetry)
+		vector<double> dmsList; // Euclidian Distance (marginal symmetry)
+		vector<double> stuartList; // Stuart's test
+		vector<double> pStuartList; // Stuart's test probabilities
+		vector<double> pAbabnehList; // Ababneh's test probabilities
+		vector<double> aitchisonMargList; // Aitchison's distance (marginal symmetry)
+		vector<double> aitchisonFullList; // Aitchison's distance (full symmetry)
 
 		for (unsigned int k = 0; k < len; k++) { // 1st sequence
 			Sequence s1 = _alignment[k];
 			for (unsigned int l = k + 1; l < len; l++) { // 2nd sequence
 				Sequence s2 = _alignment[l];
-				unsigned int sum = 0;
-				map<pair<unsigned int, unsigned int>, unsigned int> nmap;
+				
+				/* Counting the combinations of characters in the alignment */
+				unsigned int sum = 0; // Sum of different combinations of characters
+				map<pair<unsigned int, unsigned int>, unsigned int> nmap; // Map to count the different combinations of characters
 				map<pair<unsigned int, unsigned int>, unsigned int>::iterator it;
 				unsigned int windowEnd = windowStart + windowSize;
 				if (windowEnd > _cols)
@@ -176,6 +178,7 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 					}
 				}
 
+				/* Creating the divergence matrix that stores the combinations of characters */
 				Matrix n(_dim);
 				for (int i = 0; i < _dim; i++)
 					for (int j = 0; j < _dim; j++) {
@@ -186,25 +189,36 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 							n(i, j) = 0;
 					}
 
+				/* Compute the test statistic and degrees of freedom for Bowker's (1948) test */
 				unsigned int df = 0;
 				double bowker = .0;
-				double deltaS = 0.0;
 				for (int i = 0; i < _dim; i++) {
 					for (int j = i + 1; j < _dim; j++) {
 						if (n(i, j) + n(j, i) > 0) {
 							df++;
 							bowker += (double) ((n(i, j) - n(j, i)) * (n(i, j) - n(j, i))) / (n(i, j) + n(j, i));
 						}
-
-						double x = n(j, i) - n(i, j);
-						deltaS += (x / sum) * (x / sum);
 					}
 				}
 				dfList.push_back(df);
 				bowkerList.push_back(bowker);
+				if (df > 0)
+					pBowkerList.push_back(xChi_Square_Distribution_Tail(bowker, df));
+				else
+					pBowkerList.push_back(1.0);
+
+				/* Compute Euclidean distance (full sym.) */
+				double deltaS = 0.0;
+				for (int i = 0; i < _dim; i++) {
+					for (int j = i + 1; j < _dim; j++) {
+						double x = n(j, i) - n(i, j);
+						deltaS += (x / sum) * (x / sum);
+					}
+				}
 				dsList.push_back(sqrt(deltaS));
 
-				double deltaMs = 0.0;
+				/* Compute Euclidean distance (mar. sym.) */
+				double deltaMs = 0.0; // Euclidean distance (mar. sym.)
 				for (int i = 0; i < _dim; i++) {
 					double rowSum = n.getRowSum(i);
 					double colSum = n.getColSum(i);
@@ -212,6 +226,7 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 				}
 				dmsList.push_back(sqrt(deltaMs) / sqrt(2.0));
 
+				/* Compute the test statistic for Stuart's test */
 				Matrix V(_dim - 1);
 				for (int i = 0; i < _dim - 1; i++)
 					for (int j = 0; j < _dim - 1; j++)
@@ -236,11 +251,8 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 				}
 
 				stuartList.push_back(stuart);
-				if (df > 0)
-					pBowkerList.push_back(xChi_Square_Distribution_Tail(bowker, df));
-				else
-					pBowkerList.push_back(1.0);
 
+				/* Compute probabilities for Stuart's and Ababneh's test */
 				unsigned int dfS = _dim - 1;
 				unsigned int dfA = df - dfS;
 				if (stuart != stuart) { // NaN
@@ -258,6 +270,7 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 						pAbabnehList.push_back(1.0);
 				}
 
+				/* Compute Aitchison's distance (marg. sym.) */
 				double prior = 1.0;
 				double aitchisonMarg = 0.0;
 				int c = 0;
@@ -283,6 +296,7 @@ void Alignment::testSymmetry(string prefix, int windowSize, int windowStep) {
 				aitchisonMarg = sqrt(aitchisonMarg / (2 * c));
 				aitchisonMargList.push_back(aitchisonMarg);
 
+				/* Compute Aitchison's distance (full sym.) */
 				double aitchisonFull = 0.0;
 				c = 0;
 				for (int g = 0; g < _dim; g++) {

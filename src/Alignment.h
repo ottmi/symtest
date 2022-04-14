@@ -18,7 +18,7 @@ public:
 
 	void addSequence(Sequence sequence);
 
-	void testSymmetry(string prefix, int windowSize, int windowStep);
+	void computeStatistics(int windowSize, int windowStep);
 
 	void printStatistics(vector<double> &pValues, char id);
 
