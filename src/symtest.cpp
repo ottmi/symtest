@@ -337,7 +337,7 @@ int main(int argc, char** argv)
 	try
 	{
 		Alignment alignment = Alignment(&options);
-		alignment.computeStatistics(options.windowSize, options.windowStep);
+		alignment.computeTestsOfSymmetry(options.windowSize, options.windowStep);
 		alignment.writeResults(&options);
 	} catch (string& s)
 	{

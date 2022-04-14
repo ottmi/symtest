@@ -128,7 +128,7 @@ Alignment::Alignment(Options *options) {
 Alignment::~Alignment() {
 }
 
-void Alignment::computeStatistics(int windowSize, int windowStep) {
+void Alignment::computeTestsOfSymmetry(int windowSize, int windowStep) {
 	cout << endl << "Performing tests of pairwise symmetry" << endl;
 
 	unsigned int len = _alignment.size();
@@ -351,34 +351,31 @@ void Alignment::printStatistics(vector<double> &pValues, char id) {
 	double sumP = 0;
 	vector<unsigned int> count(10, 0);
 
-	unsigned int j = 0;
-	for (unsigned int k = 0; k < _alignment.size(); k++) {
-		for (unsigned int l = k + 1; l < _alignment.size(); l++) {
-			if (pValues[j] < minP)
-				minP = pValues[j];
-			if (pValues[j] < 0.05)
-				count[0]++;
-			if (pValues[j] < 0.01)
-				count[1]++;
-			if (pValues[j] < 0.005)
-				count[2]++;
-			if (pValues[j] < 0.001)
-				count[3]++;
-			if (pValues[j] < 0.0005)
-				count[4]++;
-			if (pValues[j] < 0.0001)
-				count[5]++;
-			if (pValues[j] < 0.00005)
-				count[6]++;
-			if (pValues[j] < 0.00001)
-				count[7]++;
-			if (pValues[j] < 0.000005)
-				count[8]++;
-			if (pValues[j] < 0.000001)
-				count[9]++;
-			sumP += pValues[j];
-			j++;
-		}
+	size_t total = pValues.size();
+	for (unsigned int j = 0; j < total; j++) {
+		if (pValues[j] < minP)
+			minP = pValues[j];
+		if (pValues[j] < 0.05)
+			count[0]++;
+		if (pValues[j] < 0.01)
+			count[1]++;
+		if (pValues[j] < 0.005)
+			count[2]++;
+		if (pValues[j] < 0.001)
+			count[3]++;
+		if (pValues[j] < 0.0005)
+			count[4]++;
+		if (pValues[j] < 0.0001)
+			count[5]++;
+		if (pValues[j] < 0.00005)
+			count[6]++;
+		if (pValues[j] < 0.00001)
+			count[7]++;
+		if (pValues[j] < 0.000005)
+			count[8]++;
+		if (pValues[j] < 0.000001)
+			count[9]++;
+		sumP += pValues[j];
 	}
 
 	vector<double> sortedP(pValues.begin(), pValues.end());
@@ -391,29 +388,29 @@ void Alignment::printStatistics(vector<double> &pValues, char id) {
 
 	cout.precision(2);
 	if (minP < 0.05)
-		cout << "  " << id << ": P-values < 0.05            " << setw(8) << count[0] << " (" << fixed << (double) count[0] * 100 / j << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.05            " << setw(8) << count[0] << " (" << fixed << (double) count[0] * 100 / total << "%)" << endl;
 	if (minP < 0.01)
-		cout << "  " << id << ": P-values < 0.01            " << setw(8) << count[1] << " (" << fixed << (double) count[1] * 100 / j << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.01            " << setw(8) << count[1] << " (" << fixed << (double) count[1] * 100 / total << "%)" << endl;
 	if (minP < 0.005)
-		cout << "  " << id << ": P-values < 0.005           " << setw(8) << count[2] << " (" << fixed << (double) count[2] * 100 / j << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.005           " << setw(8) << count[2] << " (" << fixed << (double) count[2] * 100 / total << "%)" << endl;
 	if (minP < 0.001)
-		cout << "  " << id << ": P-values < 0.001           " << setw(8) << count[3] << " (" << fixed << (double) count[3] * 100 / j << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.001           " << setw(8) << count[3] << " (" << fixed << (double) count[3] * 100 / total << "%)" << endl;
 	if (minP < 0.0005)
-		cout << "  " << id << ": P-values < 0.0005          " << setw(8) << count[4] << " (" << fixed << (double) count[4] * 100 / j << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.0005          " << setw(8) << count[4] << " (" << fixed << (double) count[4] * 100 / total << "%)" << endl;
 	if (minP < 0.0001)
-		cout << "  " << id << ": P-values < 0.0001          " << setw(8) << count[5] << " (" << fixed << (double) count[5] * 100 / j << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.0001          " << setw(8) << count[5] << " (" << fixed << (double) count[5] * 100 / total << "%)" << endl;
 	if (minP < 0.00005)
-		cout << "  " << id << ": P-values < 0.00005         " << setw(8) << count[6] << " (" << fixed << (double) count[6] * 100 / j << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.00005         " << setw(8) << count[6] << " (" << fixed << (double) count[6] * 100 / total << "%)" << endl;
 	if (minP < 0.00001)
-		cout << "  " << id << ": P-values < 0.00001         " << setw(8) << count[7] << " (" << fixed << (double) count[7] * 100 / j << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.00001         " << setw(8) << count[7] << " (" << fixed << (double) count[7] * 100 / total << "%)" << endl;
 	if (minP < 0.000005)
-		cout << "  " << id << ": P-values < 0.000005        " << setw(8) << count[8] << " (" << fixed << (double) count[8] * 100 / j << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.000005        " << setw(8) << count[8] << " (" << fixed << (double) count[8] * 100 / total << "%)" << endl;
 	if (minP < 0.000001)
-		cout << "  " << id << ": P-values < 0.000001        " << setw(8) << count[9] << " (" << fixed << (double) count[9] * 100 / j << "%)" << endl;
-	cout << "  " << id << ": Number of tests              " << setw(15) << j << endl;
+		cout << "  " << id << ": P-values < 0.000001        " << setw(8) << count[9] << " (" << fixed << (double) count[9] * 100 / total << "%)" << endl;
+	cout << "  " << id << ": Number of tests              " << setw(15) << total << endl;
 	cout.precision(8);
 	cout << "  " << id << ": Median P-value               " << setw(15) << scientific << medP << endl;
-	cout << "  " << id << ": Average P-value              " << setw(15) << scientific << sumP / j << endl;
+	cout << "  " << id << ": Average P-value              " << setw(15) << scientific << sumP / total << endl;
 	cout << "  " << id << ": Smallest P-value             " << setw(15) << scientific << minP << endl;
 }
 
