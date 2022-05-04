@@ -265,7 +265,7 @@ void Alignment::computeTestsOfSymmetry(int windowSize, int windowStep) {
 						pStuartList.push_back(1.0);
 
 					if (dfA > 0)
-						pAbabnehList.push_back(xChi_Square_Distribution_Tail(bowker - stuart, dfA));
+						pAbabnehList.push_back(xChi_Square_Distribution_Tail(fabs(bowker - stuart), dfA));
 					else
 						pAbabnehList.push_back(1.0);
 				}
@@ -409,9 +409,9 @@ void Alignment::printStatistics(vector<double> &pValues, char id) {
 		cout << "  " << id << ": P-values < 0.000001        " << setw(8) << count[9] << " (" << fixed << (double) count[9] * 100 / total << "%)" << endl;
 	cout << "  " << id << ": Number of tests              " << setw(15) << total << endl;
 	cout.precision(8);
-	cout << "  " << id << ": Median P-value               " << setw(15) << scientific << medP << endl;
-	cout << "  " << id << ": Average P-value              " << setw(15) << scientific << sumP / total << endl;
-	cout << "  " << id << ": Smallest P-value             " << setw(15) << scientific << minP << endl;
+	cout << "  " << id << ": Median P-value               " << setw(15) << fixed << medP << endl;
+	cout << "  " << id << ": Average P-value              " << setw(15) << fixed << sumP / total << endl;
+	cout << "  " << id << ": Smallest P-value             " << setw(15) << fixed << minP << endl;
 }
 
 void Alignment::writeResults(Options* options) {
@@ -449,7 +449,7 @@ void Alignment::writeResults(Options* options) {
 		unsigned int j = 0;
 		for (unsigned int k = 0; k < len; k++) {
 			for (unsigned int l = k + 1; l < len; l++) {
-				resultsFile << _alignment[k].getName() << CSV_SEPARATOR << _alignment[l].getName() << scientific;
+				resultsFile << _alignment[k].getName() << CSV_SEPARATOR << _alignment[l].getName() << fixed;
 
 				unsigned int dfB = _df[i][j];
 				resultsFile << CSV_SEPARATOR << _bowker[i][j] << CSV_SEPARATOR << dfB << CSV_SEPARATOR << _pBowker[i][j];
@@ -462,7 +462,7 @@ void Alignment::writeResults(Options* options) {
 				} else {
 					resultsFile << CSV_SEPARATOR << _stuart[i][j] << CSV_SEPARATOR << dfS << CSV_SEPARATOR << _pStuart[i][j];
 
-					double ababneh = _bowker[i][j] - _stuart[i][j];
+					double ababneh = fabs(_bowker[i][j] - _stuart[i][j]);
 					resultsFile << CSV_SEPARATOR << ababneh << CSV_SEPARATOR << dfA << CSV_SEPARATOR << _pAbabneh[i][j];
 				}
 
@@ -574,7 +574,7 @@ void Alignment::writeExtendedResult(string title, string baseName, string ext, u
 					if (matrix[i][m] != matrix[i][m]) { // NaN
 						outFile << CSV_SEPARATOR << "n/a";
 					} else {
-						outFile << CSV_SEPARATOR << scientific << matrix[i][m];
+						outFile << CSV_SEPARATOR << fixed << matrix[i][m];
 					}
 				}
 			}
@@ -641,7 +641,7 @@ void Alignment::writeExtendedDistances(string title, string baseName, string ext
 					if (matrix[i][m] != matrix[i][m]) { // NaN
 						outFile << "n/a";
 					} else {
-						outFile << scientific << matrix[i][m];
+						outFile << fixed << matrix[i][m];
 					}
 				}
 				if (l < len - 1)
