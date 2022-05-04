@@ -209,6 +209,10 @@ void Matrix::luDecomposition()
 	// This uses Crout's algorithm, L will be a lower triangular matrix and U a unit upper triangular matrix
 	// The diagonal of the returned matrix belongs to L
 	vector<vector<double> > lu(_dim, vector<double>(_dim));
+	for (unsigned int i = 0; i < _dim; i++) {
+		lu[i][i] = 1;
+	}
+
 	for (unsigned int i = 0; i < _dim; i++)
 	{
 		for (unsigned int j = i; j < _dim; j++)
