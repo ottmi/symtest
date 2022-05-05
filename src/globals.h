@@ -7,8 +7,8 @@
 using namespace std;
 
 #define PROGNAME "symtest"
-#define VERSION "2.0.53"
-#define PROGDATE "2022-05-04"
+#define VERSION "2.0.54"
+#define PROGDATE "2022-05-05"
 
 #define _DNA_DATA	0
 #define	_AA_DATA	1
@@ -49,6 +49,7 @@ typedef struct opt_struct
     bool writeEfsFile;
     int windowSize;
     int windowStep;
+    double threshold;
     int help;
 } Options;
 

@@ -45,16 +45,17 @@ int parseArguments(int argc, char** argv, Options *options)
 	options->windowStep = -1;
 	options->columnFrom = -1;
 	options->columnTo = -1;
+	options->threshold = 0.05;
 
 	int minGroup = 0;
 	int maxGroup = 0;
 	string listOfSeq;
 
-	while ((c = getopt(argc, argv, ":t:s:p:g:c:x:w:n:v:h")) != -1)
+	while ((c = getopt(argc, argv, ":d:s:p:g:c:x:w:t:n:v:h")) != -1)
 	{
 		switch (c)
 		{
-			case 't':
+			case 'd':
 			{
 				char type = optarg[0];
 				switch (type)
@@ -175,6 +176,12 @@ int parseArguments(int argc, char** argv, Options *options)
 				omp_set_num_threads(atoi(optarg));
 				break;
 #endif
+			case 't':
+			{
+				stringstream ss(optarg);
+				ss >> options->threshold;
+				break;
+			}
 			case 'v':
 				if (optarg[0] == '-') {
 					verbose = 1;
@@ -287,7 +294,7 @@ void printSyntax()
 	cout << endl;
 
 	cout << "Options:" << endl;
-    cout << "  -t<a|d|n>      Data types: a = AA; d = DNA; n = Alphanumeric" << endl;
+    cout << "  -d<a|d|n>      Data types: a = AA; d = DNA; n = Alphanumeric" << endl;
     cout << "                 [default: auto-detect]" << endl;
 	cout << "  -s<FILE|LIST>  Only consider sequences in FILE or comma-separated LIST" << endl;
     cout << "  -p<STRING>     Prefix for output files [default: name of alignment w/o .ext]" << endl;
@@ -301,6 +308,7 @@ void printSyntax()
     cout << "  -x[LIST]       Write extended output files [default: all available]" << endl;
     cout << "                 Optional: restrict to files in LIST (comma-separated)" << endl;
     cout << "                 Available: bowker, stuart, ababneh, AMS, AFS, EMS, EFS" << endl;
+    cout << "  -t<n>          Threshold for statistical tests [default: 0.05]" << endl;
     cout << endl;
     cout << "  -v[n5]         Be increasingly verbose [n5 = 0|1|2]" << endl;
 #ifdef _OPENMP

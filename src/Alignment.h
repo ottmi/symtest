@@ -20,7 +20,7 @@ public:
 
 	void computeTestsOfSymmetry(int windowSize, int windowStep);
 
-	void printStatistics(vector<double> &pValues, char id);
+	void printStatistics(vector<double> &pValues, char id, double threshold);
 
 	void writeResults(Options* options);
 	void writeExtendedResult(string title, string baseName, string ext, unsigned int windowSize, unsigned int windowStep, vector< vector<double> >& matrix);

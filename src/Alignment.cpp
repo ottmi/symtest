@@ -346,12 +346,89 @@ void Alignment::computeTestsOfSymmetry(int windowSize, int windowStep) {
 	}
 }
 
-void Alignment::printStatistics(vector<double> &pValues, char id) {
+void Alignment::printStatistics(vector<double> &pValues, char id, double threshold) {
+	size_t total = pValues.size();
+
+	// Prepare vectors to rank P values
+	vector<double> sortedP(pValues.begin(), pValues.end());
+	vector<size_t> orderP;
+	vector<size_t> rank;
+	for (size_t i = 0; i < total; i++) {
+		orderP.push_back(i+1);
+		rank.push_back(i+1);
+	}
+	
+	// Sorting of orderP according to pValues
+	for (size_t i=0; i<total-1; i++) {
+		for (size_t j=i+1; j<total; j++) {
+			if (sortedP[j] < sortedP[i]) {
+				std::swap(sortedP[i], sortedP[j]);
+				std::swap(orderP[i], orderP[j]);
+			}
+		}
+	}
+	
+	// Sorting of rank values according to orderP values
+	for (size_t i=0; i<total-1; i++) {
+		for (size_t j=i+1; j<total; j++) {
+			if (orderP[j] < orderP[i]) {
+				std::swap(orderP[i], orderP[j]);
+				std::swap(rank[i], rank[j]);
+			}
+		}
+	}
+	
+	// Computing adjusted threshold values for FWER and FDR procedures
+	double adjustment = 0.0;
+	for (size_t j = 0; j < total; j++) {
+	    adjustment = adjustment + 1.0/(j + 1);
+	}
+	double Bonferroni = threshold/total; // Family-wise error rate (Bonferroni)
+	vector<double> P_exp;             // Vector holding expected P values
+	vector<double> Bonf;              // Vector holding family-wise error rate (Bonferroni 1936)
+	vector<double> Holm;              // Vector holding family-wise error rate (Holm 1979)
+	vector<double> BenYek;            // Vector holding false discovery rate (Benjamini & Yekulieti 2001)
+
+	for (size_t i = 0; i < total; i++) {
+	    P_exp.push_back((double)(i+1)/(total + 1));
+	    Holm.push_back((double)threshold/(total + 1 - (i+1)));
+	    BenYek.push_back((double)(threshold * (i+1))/(total * adjustment));
+	}
+
+	// Counting rejections
+	double cutoffBonf(0.0), cutoffHolm(0.0), cutoffBenYek(0.0);
+	size_t i(0), belowTau(0), rejectBonf(0), rejectHolm(0), rejectBenYek(0);
+	for (size_t k = 0; k < _alignment.size(); k++) {
+		for (size_t l = k + 1; l < _alignment.size(); l++) {
+			if (pValues[i] < threshold) {
+				belowTau++;
+			}
+			if (pValues[i] < Bonferroni) {
+				++rejectBonf;
+				if (cutoffBonf < Bonferroni) {
+					cutoffBonf = Bonferroni;
+				}
+			}
+			if (pValues[i] < Holm[rank[i]-1]) {
+				++rejectHolm;
+				if (cutoffHolm < Holm[rank[i]-1]) {
+					cutoffHolm = Holm[rank[i]-1];
+				}
+			}
+			if (pValues[i] < BenYek[rank[i]-1]) {
+				++rejectBenYek;
+				if (cutoffBenYek < BenYek[rank[i]-1]) {
+					cutoffBenYek = BenYek[rank[i]-1];
+				}
+			}
+			i++;
+		}
+	}
+
+	// Compute min, median, sum, and bins of pValues
 	double minP = 1.0;
 	double sumP = 0;
 	vector<unsigned int> count(10, 0);
-
-	size_t total = pValues.size();
 	for (unsigned int j = 0; j < total; j++) {
 		if (pValues[j] < minP)
 			minP = pValues[j];
@@ -377,9 +454,6 @@ void Alignment::printStatistics(vector<double> &pValues, char id) {
 			count[9]++;
 		sumP += pValues[j];
 	}
-
-	vector<double> sortedP(pValues.begin(), pValues.end());
-	sort(sortedP.begin(), sortedP.end());
 	double medP = sortedP[sortedP.size() / 2];
 	if (sortedP.size() % 2 == 0) {
 		medP += sortedP[sortedP.size() / 2 - 1];
@@ -388,30 +462,36 @@ void Alignment::printStatistics(vector<double> &pValues, char id) {
 
 	cout.precision(2);
 	if (minP < 0.05)
-		cout << "  " << id << ": P-values < 0.05            " << setw(8) << count[0] << " (" << fixed << (double) count[0] * 100 / total << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.05 .............................. " << count[0] << " (" << fixed << (double) count[0] * 100 / total << "%)" << endl;
 	if (minP < 0.01)
-		cout << "  " << id << ": P-values < 0.01            " << setw(8) << count[1] << " (" << fixed << (double) count[1] * 100 / total << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.01 .............................. " << count[1] << " (" << fixed << (double) count[1] * 100 / total << "%)" << endl;
 	if (minP < 0.005)
-		cout << "  " << id << ": P-values < 0.005           " << setw(8) << count[2] << " (" << fixed << (double) count[2] * 100 / total << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.005 ............................. " << count[2] << " (" << fixed << (double) count[2] * 100 / total << "%)" << endl;
 	if (minP < 0.001)
-		cout << "  " << id << ": P-values < 0.001           " << setw(8) << count[3] << " (" << fixed << (double) count[3] * 100 / total << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.001 ............................. " << count[3] << " (" << fixed << (double) count[3] * 100 / total << "%)" << endl;
 	if (minP < 0.0005)
-		cout << "  " << id << ": P-values < 0.0005          " << setw(8) << count[4] << " (" << fixed << (double) count[4] * 100 / total << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.0005 ............................ " << count[4] << " (" << fixed << (double) count[4] * 100 / total << "%)" << endl;
 	if (minP < 0.0001)
-		cout << "  " << id << ": P-values < 0.0001          " << setw(8) << count[5] << " (" << fixed << (double) count[5] * 100 / total << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.0001 ............................ " << count[5] << " (" << fixed << (double) count[5] * 100 / total << "%)" << endl;
 	if (minP < 0.00005)
-		cout << "  " << id << ": P-values < 0.00005         " << setw(8) << count[6] << " (" << fixed << (double) count[6] * 100 / total << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.00005 ........................... " << count[6] << " (" << fixed << (double) count[6] * 100 / total << "%)" << endl;
 	if (minP < 0.00001)
-		cout << "  " << id << ": P-values < 0.00001         " << setw(8) << count[7] << " (" << fixed << (double) count[7] * 100 / total << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.00001 ........................... " << count[7] << " (" << fixed << (double) count[7] * 100 / total << "%)" << endl;
 	if (minP < 0.000005)
-		cout << "  " << id << ": P-values < 0.000005        " << setw(8) << count[8] << " (" << fixed << (double) count[8] * 100 / total << "%)" << endl;
+		cout << "  " << id << ": P-values < 0.000005 .......................... " << count[8] << " (" << fixed << (double) count[8] * 100 / total << "%)" << endl;
 	if (minP < 0.000001)
-		cout << "  " << id << ": P-values < 0.000001        " << setw(8) << count[9] << " (" << fixed << (double) count[9] * 100 / total << "%)" << endl;
-	cout << "  " << id << ": Number of tests              " << setw(15) << total << endl;
+		cout << "  " << id << ": P-values < 0.000001 .......................... " << count[9] << " (" << fixed << (double) count[9] * 100 / total << "%)" << endl;
+
+	cout << "  " << id << ": Number of tests .............................. " << total << endl;
 	cout.precision(8);
-	cout << "  " << id << ": Median P-value               " << setw(15) << fixed << medP << endl;
-	cout << "  " << id << ": Average P-value              " << setw(15) << fixed << sumP / total << endl;
-	cout << "  " << id << ": Smallest P-value             " << setw(15) << fixed << minP << endl;
+	cout << "  " << id << ": Smallest P value ............................. " << fixed << minP << endl;
+	cout << "  " << id << ": Median P value ............................... " << fixed << medP << endl;
+	cout << "  " << id << ": Average P value .............................. " << fixed << sumP / total << endl;
+	cout << "  " << id << ": Level of significance (tau) .................. " << fixed << (double) threshold << endl;
+	cout << "  " << id << ": Proportion of P values below tau ............. " << fixed << (double) belowTau/total << endl;
+	cout << "  " << id << ": Tests rejected (Bonferroni 1936) ............. " << fixed << rejectBonf << endl;
+	cout << "  " << id << ": Tests rejected (Holm 1979) ................... " << fixed << rejectHolm << endl;
+	cout << "  " << id << ": Tests rejected (Benjamini & Yekutieli 2001) .. " << fixed << rejectBenYek << endl;
 }
 
 void Alignment::writeResults(Options* options) {
@@ -465,7 +545,6 @@ void Alignment::writeResults(Options* options) {
 					double ababneh = fabs(_bowker[i][j] - _stuart[i][j]);
 					resultsFile << CSV_SEPARATOR << ababneh << CSV_SEPARATOR << dfA << CSV_SEPARATOR << _pAbabneh[i][j];
 				}
-
 				resultsFile << CSV_SEPARATOR << _dms[i][j] << CSV_SEPARATOR << _ds[i][j];
 				resultsFile << CSV_SEPARATOR << _aitchisonMarg[i][j] << CSV_SEPARATOR << _aitchisonFull[i][j];
 				resultsFile << CSV_SEPARATOR << windowStart << CSV_SEPARATOR << windowEnd - 1 << endl;
@@ -477,15 +556,15 @@ void Alignment::writeResults(Options* options) {
 		cout << endl << "Highlights from the analysis (window " << windowStart << "-" << windowEnd - 1 << "):" << endl;
 
 		cout << "  Bowker's test:" << endl;
-		printStatistics(_pBowker[i], 'B');
+		printStatistics(_pBowker[i], 'B', options->threshold);
 		cout << endl;
 
 		cout << "  Stuarts's test:" << endl;
-		printStatistics(_pStuart[i], 'S');
+		printStatistics(_pStuart[i], 'S', options->threshold);
 		cout << endl;
 
 		cout << "  Ababneh et al.'s test:" << endl;
-		printStatistics(_pAbabneh[i], 'A');
+		printStatistics(_pAbabneh[i], 'A', options->threshold);
 
 		i++;
 	}
