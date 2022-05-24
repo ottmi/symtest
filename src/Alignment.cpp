@@ -202,10 +202,11 @@ void Alignment::computeTestsOfSymmetry(int windowSize, int windowStep) {
 				}
 				dfList.push_back(df);
 				bowkerList.push_back(bowker);
-				if (df > 0)
-					pBowkerList.push_back(xChi_Square_Distribution_Tail(bowker, df));
-				else
-					pBowkerList.push_back(1.0);
+				double xChi2B = 1.0;
+				if (df > 0) {
+					xChi2B = xChi_Square_Distribution_Tail(bowker, df);
+				}
+				pBowkerList.push_back(xChi2B);
 
 				/* Compute Euclidean distance (full sym.) */
 				double deltaS = 0.0;
@@ -259,15 +260,21 @@ void Alignment::computeTestsOfSymmetry(int windowSize, int windowStep) {
 					pStuartList.push_back(numeric_limits<double>::quiet_NaN());
 					pAbabnehList.push_back(numeric_limits<double>::quiet_NaN());
 				} else {
-					if (dfS > 0)
-						pStuartList.push_back(xChi_Square_Distribution_Tail(stuart, dfS));
-					else
-						pStuartList.push_back(1.0);
-
-					if (dfA > 0)
-						pAbabnehList.push_back(xChi_Square_Distribution_Tail(fabs(bowker - stuart), dfA));
-					else
-						pAbabnehList.push_back(1.0);
+					double xChi2S = 1.0;
+					double xChi2A = 1.0;
+					if (dfS > 0) {
+						xChi2S = xChi_Square_Distribution_Tail(stuart, dfS);
+					}
+					if (xChi2S > xChi2B) { // This is probably a rounding error and the two should be identical
+						xChi2S = xChi2B;
+						xChi2A = 0.0;
+					} else {
+						if (dfA > 0) {
+							xChi2A = xChi_Square_Distribution_Tail(bowker - stuart, dfA);
+						}
+					}
+					pStuartList.push_back(xChi2S);
+					pAbabnehList.push_back(xChi2A);
 				}
 
 				/* Compute Aitchison's distance (marg. sym.) */
